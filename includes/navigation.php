@@ -1,0 +1,77 @@
+<?php include __DIR__ . '/../config/config.php'; ?>
+
+<!-- [ navigation menu ] start -->
+<nav class="pcoded-navbar menupos-fixed menu-light brand-blue ">
+    <div class="navbar-wrapper ">
+        <div class="navbar-brand header-logo">
+            <a href="<?= BASE_URL ?>/index.php" class="b-brand" style="display:flex;align-items:center;">
+                <!-- brand icon + text: icon akan tetap tampil saat sidebar mengecil -->
+                <span class="pcoded-micon" style="color:#fff;"><i class="fas fa-mountain"></i></span>
+                <span class="pcoded-mtext brand-text" style="font-weight:700;font-size:16px;color:#fff;margin-left:8px;">Effort Outdoor</span>
+            </a>
+            <a class="mobile-menu" id="mobile-collapse" href="#!"><span></span></a>
+        </div>
+        <div class="navbar-content scroll-div">
+            <ul class="nav pcoded-inner-navbar">
+                
+                <li class="nav-item">
+                    <a href="<?= BASE_URL ?>/index.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-home"></i></span><span class="pcoded-mtext">Dashboard</span></a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="<?= BASE_URL ?>/pages/produk.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-box"></i></span><span class="pcoded-mtext">Kelola Produk</span></a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="<?= BASE_URL ?>/pesanan.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-shopping-cart"></i></span><span class="pcoded-mtext">Kelola Pesanan</span></a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="<?= BASE_URL ?>/pelanggan.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-users"></i></span><span class="pcoded-mtext">Kelola Pelanggan</span></a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="<?= BASE_URL ?>/pengiriman.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-truck"></i></span><span class="pcoded-mtext">Kelola Pengiriman</span></a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="<?= BASE_URL ?>/pembayaran.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-credit-card"></i></span><span class="pcoded-mtext">Kelola Pembayaran</span></a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="<?= BASE_URL ?>/stok.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-archive"></i></span><span class="pcoded-mtext">Kelola Stok</span></a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="<?= BASE_URL ?>/kategori.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-list"></i></span><span class="pcoded-mtext">Kelola Kategori</span></a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="<?= BASE_URL ?>/lacak-pesanan.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-map-marked-alt"></i></span><span class="pcoded-mtext">Lacak Pesanan</span></a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="<?= BASE_URL ?>/users.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-user"></i></span><span class="pcoded-mtext">Kelola User</span></a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="<?= BASE_URL ?>/laporan-keuangan.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-file-alt"></i></span><span class="pcoded-mtext">Laporan Keuangan</span></a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="<?= BASE_URL ?>/crm.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-briefcase"></i></span><span class="pcoded-mtext">CRM</span></a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="<?= BASE_URL ?>/analitik.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-chart-bar"></i></span><span class="pcoded-mtext">Analitik & Statistik</span></a>
+                </li>
+
+                <li class="nav-item">
+                    <a href="<?= BASE_URL ?>/pengaturan.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-cog"></i></span><span class="pcoded-mtext">Pengaturan</span></a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+</nav>
+<!-- [ navigation menu ] end -->
