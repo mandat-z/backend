@@ -15,7 +15,7 @@
             <ul class="nav pcoded-inner-navbar">
                 
                 <li class="nav-item">
-                    <a href="<?= BASE_URL ?>/index.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-home"></i></span><span class="pcoded-mtext">Dashboard</span></a>
+                    <a href="<?= BASE_URL ?>/pages/dashboard.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-home"></i></span><span class="pcoded-mtext">Dashboard</span></a>
                 </li>
 
                 <li class="nav-item">
@@ -27,10 +27,6 @@
                 </li>
 
                 <li class="nav-item">
-                    <a href="<?= BASE_URL ?>/pelanggan.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-users"></i></span><span class="pcoded-mtext">Kelola Pelanggan</span></a>
-                </li>
-
-                <li class="nav-item">
                     <a href="<?= BASE_URL ?>/pengiriman.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-truck"></i></span><span class="pcoded-mtext">Kelola Pengiriman</span></a>
                 </li>
 
@@ -39,19 +35,11 @@
                 </li>
 
                 <li class="nav-item">
-                    <a href="<?= BASE_URL ?>/stok.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-archive"></i></span><span class="pcoded-mtext">Kelola Stok</span></a>
-                </li>
-
-                <li class="nav-item">
-                    <a href="<?= BASE_URL ?>/kategori.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-list"></i></span><span class="pcoded-mtext">Kelola Kategori</span></a>
-                </li>
-
-                <li class="nav-item">
                     <a href="<?= BASE_URL ?>/lacak-pesanan.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-map-marked-alt"></i></span><span class="pcoded-mtext">Lacak Pesanan</span></a>
                 </li>
 
                 <li class="nav-item">
-                    <a href="<?= BASE_URL ?>/users.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-user"></i></span><span class="pcoded-mtext">Kelola User</span></a>
+                    <a href="<?= BASE_URL ?>/pages/users.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-user"></i></span><span class="pcoded-mtext">Kelola User</span></a>
                 </li>
 
                 <li class="nav-item">
@@ -63,7 +51,7 @@
                 </li>
 
                 <li class="nav-item">
-                    <a href="<?= BASE_URL ?>/analitik.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-chart-bar"></i></span><span class="pcoded-mtext">Analitik & Statistik</span></a>
+                    <a href="<?= BASE_URL ?>/pages/analitik.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-chart-bar"></i></span><span class="pcoded-mtext">Analitik & Statistik</span></a>
                 </li>
 
                 <li class="nav-item">
