@@ -42,10 +42,9 @@ include __DIR__ . '/../includes/topbar.php';      // topbar
                                                 <h3 class="m-b-0 text-white">1,234</h3>
                                             </div>
                                             <div class="col-auto">
-                                                <i class="fas fa-box text-white f-24"></i>
+                                                <i class="fas fa-box text-blue f-24"></i>
                                             </div>
                                         </div>
-                                        <p class="m-b-0"><span class="label label-primary m-r-10">+4%</span> dari bulan lalu</p>
                                     </div>
                                 </div>
                             </div>
@@ -55,52 +54,19 @@ include __DIR__ . '/../includes/topbar.php';      // topbar
                                     <div class="card-body">
                                         <div class="row align-items-center">
                                             <div class="col">
-                                                <h6 class="m-b-5 text-white">Pesanan</h6>
+                                                <h6 class="m-b-5 text-white">Total Pesanan</h6>
                                                 <h3 class="m-b-0 text-white">587</h3>
                                             </div>
                                             <div class="col-auto">
-                                                <i class="fas fa-shopping-cart text-white f-24"></i>
+                                                <i class="fas fa-shopping-cart text-green f-24"></i>
                                             </div>
                                         </div>
-                                        <p class="m-b-0"><span class="label label-success m-r-10">+8%</span> minggu ini</p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="col-xl-3 col-md-6">
-                                <div class="card prod-p-card bg-c-yellow">
-                                    <div class="card-body">
-                                        <div class="row align-items-center">
-                                            <div class="col">
-                                                <h6 class="m-b-5 text-white">Pelanggan</h6>
-                                                <h3 class="m-b-0 text-white">2,103</h3>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-users text-white f-24"></i>
-                                            </div>
-                                        </div>
-                                        <p class="m-b-0"><span class="label label-warning m-r-10">+2%</span> dari bulan lalu</p>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div class="col-xl-3 col-md-6">
-                                <div class="card prod-p-card bg-c-red">
-                                    <div class="card-body">
-                                        <div class="row align-items-center">
-                                            <div class="col">
-                                                <h6 class="m-b-5 text-white">Pendapatan</h6>
-                                                <h3 class="m-b-0 text-white">Rp 125.400.000</h3>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-dollar-sign text-white f-24"></i>
-                                            </div>
-                                        </div>
-                                        <p class="m-b-0"><span class="label label-danger m-r-10">+12%</span> kuartal ini</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                            
                         <!-- end summary cards -->
 
                         <div class="row">
@@ -266,6 +232,8 @@ include __DIR__ . '/../includes/topbar.php';      // topbar
 <script src="<?= ASSET ?>/js/pcoded.min.js"></script>
 <!-- optional page chart script (template has example) -->
 <script src="<?= ASSET ?>/js/pages/dashboard-analytics.js"></script>
+<script src="<?= ASSET ?>/js/pages/chart-morris-custom.js"></script>
+
 
 <script>
     // placeholder chart init (if dashboard-analytics available it will override)

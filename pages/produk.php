@@ -40,7 +40,15 @@ include __DIR__ . '/../includes/topbar.php';       // topbar
                                             <button class="btn btn-primary" data-toggle="modal" data-target="#modalAddProduct">
                                                 <i class="fas fa-plus"></i> Tambah Produk
                                             </button>
-                                            <!-- tombol Kategori & Gambar dihilangkan -->
+                                            <button class="btn btn-outline-secondary" data-toggle="modal" data-target="#modalKategori">
+                                                <i class="fas fa-list"></i> Kategori Produk
+                                            </button>
+                                            
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownKategori" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <i class="fas fa-filter"></i> Filter
+            </button>
+            
+
                                         </div>
                                         <div>
                                             <input type="text" id="searchProduct" class="form-control" placeholder="Cari produk..." style="width:260px;">
@@ -296,8 +304,47 @@ while ($p = $stmt->fetch()) {
     </div>
 </div>
 
+<!-- Modal: Kategori Produk -->
+<div class="modal fade" id="modalKategori" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form id="formKategori">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Kategori Produk</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group mb-3" id="kategoriList">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Elektronik
+                            <span>
+                                <button class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash-alt"></i></button>
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Fashion
+                            <span>
+                                <button class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash-alt"></i></button>
+                            </span>
+                        </li>
+                    </ul>
 
-
+                    <div class="input-group">
+                        <input type="text" id="newKategori" class="form-control" placeholder="Tambah kategori baru">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" id="addKategoriBtn" type="button"><i class="fas fa-plus"></i> Tambah</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 
 <?php
 // include footer script (jika ada global footer)

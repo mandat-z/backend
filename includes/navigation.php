@@ -23,19 +23,15 @@
                 </li>
 
                 <li class="nav-item">
-                    <a href="<?= BASE_URL ?>/pesanan.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-shopping-cart"></i></span><span class="pcoded-mtext">Kelola Pesanan</span></a>
+                    <a href="<?= BASE_URL ?>/pages/pesanan.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-shopping-cart"></i></span><span class="pcoded-mtext">Kelola Pesanan</span></a>
                 </li>
 
                 <li class="nav-item">
-                    <a href="<?= BASE_URL ?>/pengiriman.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-truck"></i></span><span class="pcoded-mtext">Kelola Pengiriman</span></a>
+                    <a href="<?= BASE_URL ?>/pages/pengiriman.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-truck"></i></span><span class="pcoded-mtext">Kelola Pengiriman</span></a>
                 </li>
 
                 <li class="nav-item">
-                    <a href="<?= BASE_URL ?>/pembayaran.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-credit-card"></i></span><span class="pcoded-mtext">Kelola Pembayaran</span></a>
-                </li>
-
-                <li class="nav-item">
-                    <a href="<?= BASE_URL ?>/lacak-pesanan.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-map-marked-alt"></i></span><span class="pcoded-mtext">Lacak Pesanan</span></a>
+                    <a href="<?= BASE_URL ?>/pages/pembayaran.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-credit-card"></i></span><span class="pcoded-mtext">Kelola Pembayaran</span></a>
                 </li>
 
                 <li class="nav-item">
@@ -43,11 +39,11 @@
                 </li>
 
                 <li class="nav-item">
-                    <a href="<?= BASE_URL ?>/laporan-keuangan.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-file-alt"></i></span><span class="pcoded-mtext">Laporan Keuangan</span></a>
+                    <a href="<?= BASE_URL ?>/pages/laporan.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-file-alt"></i></span><span class="pcoded-mtext">Laporan Keuangan</span></a>
                 </li>
 
                 <li class="nav-item">
-                    <a href="<?= BASE_URL ?>/crm.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-briefcase"></i></span><span class="pcoded-mtext">CRM</span></a>
+                    <a href="<?= BASE_URL ?>/pages/crm.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-briefcase"></i></span><span class="pcoded-mtext">CRM</span></a>
                 </li>
 
                 <li class="nav-item">
@@ -55,7 +51,7 @@
                 </li>
 
                 <li class="nav-item">
-                    <a href="<?= BASE_URL ?>/pengaturan.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-cog"></i></span><span class="pcoded-mtext">Pengaturan</span></a>
+                    <a href="<?= BASE_URL ?>/pages/pengaturan.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-cog"></i></span><span class="pcoded-mtext">Pengaturan</span></a>
                 </li>
 
             </ul>
