@@ -1,33 +1,34 @@
 <?php
-include_once __DIR__ . '/../config/config.php';
-header('Content-Type: application/json; charset=utf-8');
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_encode(['success'=>false,'message'=>'Method not allowed']); exit; }
+include __DIR__ . '/../config/config.php';
+header('Content-Type: application/json');
 
-$raw = json_decode(file_get_contents('php://input'), true);
-if (!$raw) { http_response_code(400); echo json_encode(['success'=>false,'message'=>'Invalid JSON']); exit; }
-
-$nama = trim($raw['nama'] ?? '');
-$kategori = trim($raw['kategori'] ?? '');
-$stok = intval($raw['stok'] ?? 0);
-$harga = floatval($raw['harga'] ?? 0);
-$deskripsi = $raw['deskripsi'] ?? null;
-$foto = $raw['foto'] ?? null;
-
-if ($nama === '' || $kategori === '') { http_response_code(400); echo json_encode(['success'=>false,'message'=>'Missing fields']); exit; }
+$db = get_db();
 
 try {
-    $db = get_db();
-    $stmt = $db->prepare('INSERT INTO produk (nama,kategori,stok,harga,deskripsi,foto) VALUES (:nama,:kategori,:stok,:harga,:deskripsi,:foto)');
+    $data = json_decode(file_get_contents("php://input"), true);
+    
+    // Validasi input wajib
+    if (empty($data['nama']) || empty($data['kategori']) || empty($data['harga'])) {
+        throw new Exception("Nama, kategori, dan harga wajib diisi.");
+    }
+    
+    // Query insert produk
+    $stmt = $db->prepare("
+        INSERT INTO produk (nama, kategori, stok, harga, deskripsi, foto, created_at)
+        VALUES (:nama, :kategori, :stok, :harga, :deskripsi, :foto, NOW())
+    ");
+    
     $stmt->execute([
-        ':nama'=>$nama, ':kategori'=>$kategori, ':stok'=>$stok, ':harga'=>$harga,
-        ':deskripsi'=>$deskripsi, ':foto'=>$foto
+        ':nama'      => $data['nama'],
+        ':kategori'  => $data['kategori'],
+        ':stok'      => $data['stok'] ?? 0,
+        ':harga'     => $data['harga'],
+        ':deskripsi' => $data['deskripsi'] ?? '',
+        ':foto'      => $data['foto'] ?? null
     ]);
-    $id = $db->lastInsertId();
-    echo json_encode(['success'=>true,'id'=>$id]);
-    exit;
+    
+    echo json_encode(['success' => true, 'message' => 'Produk berhasil ditambahkan.']);
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['success'=>false,'message'=>$e->getMessage()]);
-    exit;
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>
