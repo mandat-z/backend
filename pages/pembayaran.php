@@ -12,7 +12,6 @@ include __DIR__ . '/../includes/topbar.php';
         <div class="main-body">
           <div class="page-wrapper">
 
-            <!-- Page Header -->
             <div class="page-header">
               <div class="page-block">
                 <div class="row align-items-center">
@@ -21,69 +20,40 @@ include __DIR__ . '/../includes/topbar.php';
                       <h5>Kelola Metode Pembayaran</h5>
                     </div>
                     <ul class="breadcrumb">
-                      <li class="breadcrumb-item"><a href="<?= BASE_URL ?>/index.php"><i class="fas fa-home"></i></a></li>
-                      <li class="breadcrumb-item"><a href="#!">Pembayaran</a></li>
+                      <li class="breadcrumb-item"><a href="#"><i class="fas fa-home"></i></a></li>
+                      <li class="breadcrumb-item"><a href="#">Pembayaran</a></li>
                     </ul>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Konten -->
             <section class="content">
               <div class="container-fluid">
                 <div class="card">
                   <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title">Daftar Metode Pembayaran</h3>
-                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#tambahPembayaranModal">
+                    <h3 class="card-title mb-0">Daftar Metode Pembayaran</h3>
+                    <button class="btn btn-success" data-toggle="modal" data-target="#tambahPembayaranModal">
                       <i class="fas fa-plus"></i> Tambah Metode
                     </button>
                   </div>
 
                   <div class="card-body table-responsive">
                     <table class="table table-bordered table-striped">
-                      <thead class="table-success">
+                      <thead class="bg-success text-white text-center">
                         <tr>
-                          <th>No</th>
+                          <th width="5%">No</th>
                           <th>Nama Metode</th>
                           <th>Jenis</th>
-                          <th>Tujuan Pembayaran</th>
+                          <th>Tujuan</th>
+                          <th>QR Code</th>
                           <th>Keterangan</th>
-                          <th>Aksi</th>
+                          <th>Status</th>
+                          <th width="15%">Aksi</th>
                         </tr>
                       </thead>
-                      <tbody>
-                        <tr>
-                          <td>1</td>
-                          <td>Bank BCA</td>
-                          <td>Transfer Bank</td>
-                          <td>No. Rekening: 1234567890 a.n. Warung Mie Ayam</td>
-                          <td>Transfer antar bank dikenakan biaya admin</td>
-                          <td>
-                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editPembayaranModal1">
-                              <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger">
-                              <i class="fas fa-trash"></i>
-                            </button>
-                          </td>
-                        </tr>
-
-                        <tr>
-                          <td>2</td>
-                          <td>DANA</td>
-                          <td>E-Wallet</td>
-                          <td>No. HP: 081234567890</td>
-                          <td>Bisa kirim QR ke pelanggan</td>
-                          <td>
-                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editPembayaranModal2">
-                              <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger">
-                              <i class="fas fa-trash"></i>
-                            </button>
-                          </td>
-                        </tr>
+                      <tbody id="pembayaranTable">
+                        <tr><td colspan="8" class="text-center">Memuat data...</td></tr>
                       </tbody>
                     </table>
                   </div>
@@ -99,35 +69,49 @@ include __DIR__ . '/../includes/topbar.php';
 </div>
 
 <!-- Modal Tambah -->
-<div class="modal fade" id="tambahPembayaranModal" tabindex="-1">
-  <div class="modal-dialog">
-    <form method="post" action="tambah_pembayaran.php">
+<div class="modal fade" id="tambahPembayaranModal" tabindex="-1" role="dialog" aria-labelledby="tambahLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form id="tambahForm" enctype="multipart/form-data">
       <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Tambah Metode Pembayaran</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="tambahLabel">Tambah Metode Pembayaran</h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
         <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label">Nama Metode</label>
+          <div class="form-group">
+            <label>Nama Metode</label>
             <input type="text" name="nama_metode" class="form-control" required>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Jenis Pembayaran</label>
-            <select name="jenis" class="form-select" required>
+          <div class="form-group">
+            <label>Jenis</label>
+            <select name="jenis" class="form-control" required>
               <option value="">-- Pilih Jenis --</option>
               <option value="Transfer Bank">Transfer Bank</option>
               <option value="E-Wallet">E-Wallet</option>
-              <option value="COD">Cash On Delivery (COD)</option>
+              <option value="COD">COD</option>
+              <option value="QRIS">QRIS</option>
             </select>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Tujuan Pembayaran</label>
-            <textarea name="tujuan" class="form-control" rows="2" placeholder="Contoh: No. Rekening atau No. HP"></textarea>
+          <div class="form-group">
+            <label>Tujuan Pembayaran</label>
+            <textarea name="tujuan" class="form-control" rows="2"></textarea>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Keterangan</label>
+          <div class="form-group">
+            <label>Keterangan</label>
             <textarea name="keterangan" class="form-control" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Upload QR (Opsional)</label>
+            <input type="file" name="qr_image" class="form-control" accept="image/*">
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select name="status" class="form-control">
+              <option value="Aktif">Aktif</option>
+              <option value="Nonaktif">Nonaktif</option>
+            </select>
           </div>
         </div>
         <div class="modal-footer">
@@ -138,40 +122,54 @@ include __DIR__ . '/../includes/topbar.php';
   </div>
 </div>
 
-<!-- Modal Edit (contoh dummy) -->
-<div class="modal fade" id="editPembayaranModal1" tabindex="-1">
-  <div class="modal-dialog">
-    <form method="post" action="edit_pembayaran.php">
+<!-- Modal Edit -->
+<div class="modal fade" id="editPembayaranModal" tabindex="-1" role="dialog" aria-labelledby="editLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form id="editForm" enctype="multipart/form-data">
       <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Edit Metode Pembayaran</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-header bg-warning text-white">
+          <h5 class="modal-title" id="editLabel">Edit Metode Pembayaran</h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </div>
         <div class="modal-body">
-          <input type="hidden" name="id_pembayaran" value="1">
-          <div class="mb-3">
-            <label class="form-label">Nama Metode</label>
-            <input type="text" name="nama_metode" class="form-control" value="Bank BCA">
+          <input type="hidden" name="id_pembayaran" id="edit_id">
+          <div class="form-group">
+            <label>Nama Metode</label>
+            <input type="text" name="nama_metode" id="edit_nama" class="form-control" required>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Jenis Pembayaran</label>
-            <select name="jenis" class="form-select">
-              <option selected>Transfer Bank</option>
-              <option>E-Wallet</option>
-              <option>COD</option>
+          <div class="form-group">
+            <label>Jenis</label>
+            <select name="jenis" id="edit_jenis" class="form-control" required>
+              <option value="Transfer Bank">Transfer Bank</option>
+              <option value="E-Wallet">E-Wallet</option>
+              <option value="COD">COD</option>
+              <option value="QRIS">QRIS</option>
             </select>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Tujuan Pembayaran</label>
-            <textarea name="tujuan" class="form-control" rows="2">No. Rekening: 1234567890 a.n. Warung Mie Ayam</textarea>
+          <div class="form-group">
+            <label>Tujuan</label>
+            <textarea name="tujuan" id="edit_tujuan" class="form-control" rows="2"></textarea>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Keterangan</label>
-            <textarea name="keterangan" class="form-control" rows="2">Transfer antar bank dikenakan biaya admin</textarea>
+          <div class="form-group">
+            <label>Keterangan</label>
+            <textarea name="keterangan" id="edit_keterangan" class="form-control" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Upload QR Baru (Opsional)</label>
+            <input type="file" name="qr_image" class="form-control" accept="image/*">
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select name="status" id="edit_status" class="form-control">
+              <option value="Aktif">Aktif</option>
+              <option value="Nonaktif">Nonaktif</option>
+            </select>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+          <button type="submit" class="btn btn-warning">Simpan Perubahan</button>
         </div>
       </div>
     </form>
@@ -181,3 +179,133 @@ include __DIR__ . '/../includes/topbar.php';
 <script src="../assets/js/vendor-all.min.js"></script>
 <script src="../assets/plugins/bootstrap/js/bootstrap.min.js"></script>
 <script src="../assets/js/pcoded.min.js"></script>
+
+<script>
+$(document).ready(function() {
+  loadData();
+
+  function loadData() {
+    fetch('../api/payment_get.php')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          renderTable(data.data);
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(err => alert('Error loading data: ' + err));
+  }
+
+  function renderTable(pembayaran) {
+    const tbody = $('#pembayaranTable');
+    tbody.empty();
+
+    if (pembayaran.length === 0) {
+      tbody.html('<tr><td colspan="8" class="text-center">Belum ada data metode pembayaran.</td></tr>');
+      return;
+    }
+
+    pembayaran.forEach((row, i) => {
+      const qrImg = row.qr_image 
+        ? `<img src="../assets/images/qr/${row.qr_image}" width="60" height="60" class="border rounded">`
+        : '<span class="text-muted">-</span>';
+
+      const statusBadge = `<span class="badge ${row.status === 'Aktif' ? 'badge-success' : 'badge-secondary'}">${row.status}</span>`;
+
+      tbody.append(`
+        <tr>
+          <td class="text-center">${i + 1}</td>
+          <td>${escapeHtml(row.nama_metode)}</td>
+          <td>${escapeHtml(row.jenis)}</td>
+          <td>${escapeHtml(row.tujuan).replace(/\n/g, '<br>')}</td>
+          <td class="text-center">${qrImg}</td>
+          <td>${escapeHtml(row.keterangan).replace(/\n/g, '<br>')}</td>
+          <td class="text-center">${statusBadge}</td>
+          <td class="text-center">
+            <button class="btn btn-sm btn-warning editBtn" 
+              data-id="${row.id_pembayaran}" 
+              data-nama="${escapeHtml(row.nama_metode)}" 
+              data-jenis="${escapeHtml(row.jenis)}" 
+              data-tujuan="${escapeHtml(row.tujuan)}" 
+              data-keterangan="${escapeHtml(row.keterangan)}" 
+              data-status="${escapeHtml(row.status)}">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn btn-sm btn-danger deleteBtn" data-id="${row.id_pembayaran}">
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      `);
+    });
+
+    attachEventListeners();
+  }
+
+  function attachEventListeners() {
+    $('.editBtn').off('click').on('click', function() {
+      const btn = $(this);
+      $('#edit_id').val(btn.data('id'));
+      $('#edit_nama').val(btn.data('nama'));
+      $('#edit_jenis').val(btn.data('jenis'));
+      $('#edit_tujuan').val(btn.data('tujuan'));
+      $('#edit_keterangan').val(btn.data('keterangan'));
+      $('#edit_status').val(btn.data('status'));
+      $('#editPembayaranModal').modal('show');
+    });
+
+    $('.deleteBtn').off('click').on('click', function() {
+      const id = $(this).data('id');
+      if (confirm('Yakin ingin menghapus metode ini?')) {
+        fetch(`../api/payment_delete.php?id=${id}`)
+          .then(res => res.json())
+          .then(data => {
+            alert(data.message);
+            if (data.success) loadData();
+          })
+          .catch(err => alert('Error: ' + err));
+      }
+    });
+  }
+
+  // Form Tambah
+  $('#tambahForm').on('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    fetch('../api/payment_add.php', { method: 'POST', body: formData })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message);
+        if (data.success) {
+          $('#tambahPembayaranModal').modal('hide');
+          this.reset();
+          loadData();
+        }
+      })
+      .catch(err => alert('Error: ' + err));
+  });
+
+  // Form Edit
+  $('#editForm').on('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    fetch('../api/payment_edit.php', { method: 'POST', body: formData })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message);
+        if (data.success) {
+          $('#editPembayaranModal').modal('hide');
+          loadData();
+        }
+      })
+      .catch(err => alert('Error: ' + err));
+  });
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+});
+</script>

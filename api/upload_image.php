@@ -1,38 +1,34 @@
 <?php
-include_once __DIR__ . '/../config/config.php';
-header('Content-Type: application/json; charset=utf-8');
+// backend/api/upload_image.php
+include __DIR__ . '/../config/config.php';
+header('Content-Type: application/json');
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); echo json_encode(['success'=>false,'message'=>'Method not allowed']); exit; }
-if (empty($_FILES['gambar'])) { http_response_code(400); echo json_encode(['success'=>false,'message'=>'No file uploaded']); exit; }
+$db = get_db();
 
-$file = $_FILES['gambar'];
-if ($file['error'] !== UPLOAD_ERR_OK) { http_response_code(400); echo json_encode(['success'=>false,'message'=>'Upload error']); exit; }
+try {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') throw new Exception('Use POST');
 
-$finfo = finfo_open(FILEINFO_MIME_TYPE);
-$mime = finfo_file($finfo, $file['tmp_name']);
-finfo_close($finfo);
-$allowed = ['image/jpeg','image/png','image/gif','image/webp'];
-if (!in_array($mime, $allowed)) { http_response_code(415); echo json_encode(['success'=>false,'message'=>'Invalid file type']); exit; }
+    if (empty($_FILES['gambar']) || $_FILES['gambar']['error'] !== UPLOAD_ERR_OK) {
+        throw new Exception('File not uploaded');
+    }
 
-$maxSize = 5 * 1024 * 1024;
-if ($file['size'] > $maxSize) { http_response_code(413); echo json_encode(['success'=>false,'message'=>'File too large']); exit; }
+    $allowed = ['jpg','jpeg','png','webp','gif'];
+    $tmp = $_FILES['gambar']['tmp_name'];
+    $orig = $_FILES['gambar']['name'];
+    $ext = strtolower(pathinfo($orig, PATHINFO_EXTENSION));
+    if (!in_array($ext, $allowed)) throw new Exception('Tipe file tidak diizinkan');
 
-$ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-$targetDir = __DIR__ . '/../assets/images/products';
-if (!is_dir($targetDir)) mkdir($targetDir, 0755, true);
+    $uploadDir = __DIR__ . '/../assets/images/products/';
+    if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
 
-$filename = time() . '-' . bin2hex(random_bytes(6)) . '.' . $ext;
-$targetPath = $targetDir . '/' . $filename;
+    $newName = uniqid('img_', true) . '.' . $ext;
+    $target = $uploadDir . $newName;
 
-if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
-    http_response_code(500);
-    echo json_encode(['success'=>false,'message'=>'Cannot move uploaded file']);
-    exit;
+    if (!move_uploaded_file($tmp, $target)) throw new Exception('Gagal memindahkan file');
+
+    $url = rtrim(BACKEND_URL, '/') . '/assets/images/products/' . $newName;
+
+    echo json_encode(['success' => true, 'url' => $url]);
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
-
-// public URL
-$publicUrl = rtrim(ASSET, '/') . '/images/products/' . $filename;
-echo json_encode(['success'=>true,'url'=>$publicUrl]);
-exit;
-?>

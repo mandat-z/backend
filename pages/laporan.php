@@ -166,7 +166,6 @@ include __DIR__ . '/../includes/topbar.php';      // topbar
   </section>
 </div>
 
-<?php include __DIR__ . '/includes/footer.php'; ?>
 
 <!-- JavaScript SweetAlert & Aksi -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
