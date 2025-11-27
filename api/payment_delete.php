@@ -11,7 +11,7 @@ try {
     }
 
     // Ambil data untuk hapus QR
-    $stmt = $db->prepare("SELECT qr_image FROM tb_pembayaran WHERE id_pembayaran = ?");
+    $stmt = $db->prepare("SELECT qr_image FROM metode_pembayaran WHERE id_metode = ?");
     $stmt->execute([$id]);
     $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -25,7 +25,7 @@ try {
         }
 
         // Hapus dari database
-        $stmt = $db->prepare("DELETE FROM tb_pembayaran WHERE id_pembayaran = ?");
+        $stmt = $db->prepare("DELETE FROM metode_pembayaran WHERE id_metode = ?");
         $stmt->execute([$id]);
 
         echo json_encode([

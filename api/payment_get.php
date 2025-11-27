@@ -4,7 +4,7 @@ header('Content-Type: application/json');
 
 try {
     $db = get_db();
-    $stmt = $db->query("SELECT * FROM tb_pembayaran ORDER BY id_pembayaran DESC");
+    $stmt = $db->query("SELECT * FROM metode_pembayaran ORDER BY id_metode DESC");
     $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
     echo json_encode([
         "success" => true,

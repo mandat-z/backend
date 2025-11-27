@@ -92,6 +92,18 @@ include __DIR__ . '/../includes/topbar.php';
                   </div>
                 </div>
               </div>
+
+              <!-- Voucher -->
+              <div class="col-md-4">
+                <div class="card text-center hover-shadow">
+                  <div class="card-body">
+                    <div class="mb-3"><i class="fas fa-tags fa-3x text-secondary"></i></div>
+                    <h5 class="card-title">Kelola Voucher</h5>
+                    <p class="text-muted">Kelola voucher diskon dan promosi.</p>
+                    <a href="voucher.php" class="btn btn-secondary">Kelola</a>
+                  </div>
+                </div>
+              </div>
             </div>
             <!-- End Content -->
 

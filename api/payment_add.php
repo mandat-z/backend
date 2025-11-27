@@ -47,7 +47,7 @@ try {
     }
 
     // Insert database
-    $stmt = $db->prepare("INSERT INTO tb_pembayaran (nama_metode, jenis, tujuan, keterangan, qr_image, status) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt = $db->prepare("INSERT INTO metode_pembayaran (nama_metode, jenis, tujuan, keterangan, qr_image, status) VALUES (?, ?, ?, ?, ?, ?)");
     $stmt->execute([$nama_metode, $jenis, $tujuan, $keterangan, $qrFile, $status]);
 
     echo json_encode([

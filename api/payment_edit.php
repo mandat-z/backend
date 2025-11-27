@@ -65,7 +65,7 @@ try {
     }
 
     // Update database
-    $stmt = $db->prepare("UPDATE tb_pembayaran SET nama_metode=?, jenis=?, tujuan=?, keterangan=?, qr_image=?, status=? WHERE id_pembayaran=?");
+    $stmt = $db->prepare("UPDATE metode_pembayaran SET nama_metode=?, jenis=?, tujuan=?, keterangan=?, qr_image=?, status=? WHERE id_metode=?");
     $stmt->execute([$nama_metode, $jenis, $tujuan, $keterangan, $qrFile, $status, $id]);
 
     echo json_encode([
