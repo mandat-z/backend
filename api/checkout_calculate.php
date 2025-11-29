@@ -5,6 +5,9 @@ if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 
 $db = get_db();
 
+/* --------------------------------------------------------------------------
+    VALIDASI LOGIN
+-------------------------------------------------------------------------- */
 $userId = $_SESSION['user']['id'] ?? null;
 if (!$userId) {
     echo json_encode(['success' => false, 'message' => 'Harus login']);
@@ -12,26 +15,30 @@ if (!$userId) {
 }
 
 /* --------------------------------------------------------------------------
-    READ JSON BODY
+    CHECK MODE BUY NOW
+-------------------------------------------------------------------------- */
+$isBuyNow = !empty($_SESSION['buy_now']);
+
+/* --------------------------------------------------------------------------
+    READ BODY
 -------------------------------------------------------------------------- */
 $body = json_decode(file_get_contents("php://input"), true);
-$address_id = $body['address_id'] ?? null;
+
+$address_id  = $body['address_id'] ?? null;
 $voucherCode = trim($body['voucher'] ?? "");
 
 /* Jika voucher kosong → hapus session */
-if ($voucherCode === "") {
-    unset($_SESSION['voucher_code']);
-}
+if ($voucherCode === "") unset($_SESSION['voucher_code']);
 
 /* --------------------------------------------------------------------------
-    VALIDATE ADDRESS
+    AMBIL ALAMAT
 -------------------------------------------------------------------------- */
+
 $address = null;
 
 if ($address_id) {
     $stmt = $db->prepare("
-        SELECT id, nama_penerima, phone, jalan, rt_rw, kelurahan, kecamatan, kota_id, provinsi, kode_pos, is_default
-        FROM user_addresses 
+        SELECT * FROM user_addresses 
         WHERE id = ? AND user_id = ?
         LIMIT 1
     ");
@@ -41,8 +48,7 @@ if ($address_id) {
 
 if (!$address) {
     $stmt = $db->prepare("
-        SELECT id, nama_penerima, phone, jalan, rt_rw, kelurahan, kecamatan, kota_id, provinsi, kode_pos, is_default
-        FROM user_addresses 
+        SELECT * FROM user_addresses
         WHERE user_id = ?
         ORDER BY is_default DESC, id DESC
         LIMIT 1
@@ -52,22 +58,56 @@ if (!$address) {
 }
 
 /* --------------------------------------------------------------------------
-    CALCULATE SUBTOTAL
+    AMBIL ITEM → BUY NOW / CART
 -------------------------------------------------------------------------- */
-$cartStmt = $db->prepare("
-    SELECT c.id, c.quantity, p.harga, p.nama
-    FROM carts c 
-    JOIN produk p ON p.id = c.product_id
-    WHERE c.user_id = ?
-");
-$cartStmt->execute([$userId]);
-$items = $cartStmt->fetchAll(PDO::FETCH_ASSOC);
-
+$items = [];
 $subtotal = 0;
-foreach ($items as &$it) {
-    $price = $it['harga'];
-    $it['line_subtotal'] = $price * $it['quantity'];
-    $subtotal += $it['line_subtotal'];
+
+if ($isBuyNow) {
+
+    /* ---------------------------------------
+        MODE BUY NOW
+    ----------------------------------------*/
+    $bn = $_SESSION['buy_now'];
+    $productId = intval($bn['product_id']);
+    $qty = intval($bn['qty']);
+
+    $stmt = $db->prepare("SELECT id, nama, harga, stok FROM produk WHERE id = ?");
+    $stmt->execute([$productId]);
+    $p = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($p) {
+        $line = $p['harga'] * $qty;
+
+        $items[] = [
+            "product_id" => $p['id'],
+            "nama"       => $p['nama'],
+            "harga"      => $p['harga'],
+            "quantity"   => $qty,
+            "line_subtotal" => $line
+        ];
+
+        $subtotal = $line;
+    }
+
+} else {
+
+    /* ---------------------------------------
+        MODE CART NORMAL
+    ----------------------------------------*/
+    $stmt = $db->prepare("
+        SELECT c.quantity, p.id AS product_id, p.nama, p.harga
+        FROM carts c
+        JOIN produk p ON p.id = c.product_id
+        WHERE c.user_id = ?
+    ");
+    $stmt->execute([$userId]);
+    $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($items as &$it) {
+        $it['line_subtotal'] = $it['harga'] * $it['quantity'];
+        $subtotal += $it['line_subtotal'];
+    }
 }
 
 /* --------------------------------------------------------------------------
@@ -76,17 +116,17 @@ foreach ($items as &$it) {
 $shipping = 0;
 
 if ($address) {
-    $city = $db->prepare("SELECT ongkir FROM cities WHERE id = ?");
-    $city->execute([$address['kota_id']]);
-    $shipping = floatval($city->fetchColumn() ?? 0);
+    $stmt = $db->prepare("SELECT ongkir FROM cities WHERE id = ?");
+    $stmt->execute([$address['kota_id']]);
+    $shipping = floatval($stmt->fetchColumn() ?? 0);
 }
 
 /* --------------------------------------------------------------------------
-    VOUCHER DISCOUNT
+    DISCOUNT (CART ONLY)
 -------------------------------------------------------------------------- */
 $discount = 0;
 
-if ($voucherCode) {
+if (!$isBuyNow && $voucherCode !== "") {
 
     $stmt = $db->prepare("
         SELECT * FROM tb_voucher 
@@ -98,16 +138,18 @@ if ($voucherCode) {
 
     if ($voucher && $subtotal >= floatval($voucher['minimal_belanja'])) {
 
-        // SIMPAN voucher ke session
         $_SESSION['voucher_code'] = $voucherCode;
 
         if ($voucher['tipe_diskon'] === 'persen') {
             $discount = round($subtotal * floatval($voucher['diskon']) / 100);
 
-            if (floatval($voucher['maksimal_diskon']) > 0 &&
-                $discount > floatval($voucher['maksimal_diskon'])) {
+            if (
+                floatval($voucher['maksimal_diskon']) > 0 &&
+                $discount > floatval($voucher['maksimal_diskon'])
+            ) {
                 $discount = floatval($voucher['maksimal_diskon']);
             }
+
         } else {
             $discount = floatval($voucher['diskon']);
         }
@@ -123,10 +165,11 @@ $total = $subtotal + $shipping - $discount;
     RESPONSE
 -------------------------------------------------------------------------- */
 echo json_encode([
-    "success" => true,
-    "items" => $items,
+    "success"  => true,
+    "mode"     => $isBuyNow ? "buynow" : "cart",
+    "items"    => $items,
     "subtotal" => $subtotal,
     "shipping" => $shipping,
     "discount" => $discount,
-    "total" => $total
+    "total"    => $total
 ]);
