@@ -7,7 +7,6 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-// Debug (optional, bisa dimatikan di production)
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -32,12 +31,12 @@ if (!$userId) {
 }
 
 /* ============================================================================
- *  AMBIL BODY REQUEST (JSON)
+ *  AMBIL BODY REQUEST
  * ==========================================================================*/
 $body = json_decode(file_get_contents("php://input"), true);
 
 $addressId       = $body['address_id']      ?? null;
-$paymentMethodId = $body['payment_method']  ?? null;  // id dari tabel metode_pembayaran
+$paymentMethodId = $body['payment_method']  ?? null;
 $voucherCode     = trim($body['voucher']    ?? "");
 
 /* ============================================================================
@@ -45,22 +44,37 @@ $voucherCode     = trim($body['voucher']    ?? "");
  * ==========================================================================*/
 $isBuyNow = !empty($_SESSION['buy_now']);
 
-/**
- * Jika Buy Now → biasanya TIDAK pakai voucher
- * (ini opsional, tapi aman untuk pisahkan logika cart & buynow)
- */
 if ($isBuyNow) {
     $voucherCode = "";
 }
 
+/* ============================================================================
+ *  GENERATOR ORDER CODE
+ * ==========================================================================*/
+function generateOrderCode($db)
+{
+    $today = date("Ymd");
+
+    $q = $db->prepare("
+        SELECT COUNT(*) AS total
+        FROM orders
+        WHERE DATE(tanggal_pesan) = CURDATE()
+    ");
+    $q->execute();
+    $row = $q->fetch(PDO::FETCH_ASSOC);
+
+    $urutan = str_pad($row["total"] + 1, 4, "0", STR_PAD_LEFT);
+
+    return "ORD{$today}-{$urutan}";
+}
+
+/* ============================================================================
+ *  PROSES CHECKOUT
+ * ==========================================================================*/
 try {
     $db->beginTransaction();
 
-    /* =======================================================================
-     *  AMBIL DATA ALAMAT (UNTUK ONGKIR)
-     * ==================================================================== */
-
-    // Kalau addressId tidak dikirim → fallback ke alamat default user
+    /* -------- Validasi alamat -------- */
     if (!$addressId) {
         $stmt = $db->prepare("
             SELECT id
@@ -83,7 +97,6 @@ try {
         jsonRes(['success' => false, 'message' => 'Metode pembayaran wajib dipilih'], 400);
     }
 
-    // Validasi alamat milik user
     $stmt = $db->prepare("
         SELECT id, kota_id
         FROM user_addresses
@@ -96,14 +109,12 @@ try {
         jsonRes(['success' => false, 'message' => 'Alamat tidak valid'], 400);
     }
 
-    /* =======================================================================
-     *  AMBIL ITEM: MODE BUY NOW ATAU CART
-     * ==================================================================== */
+    /* ============================================================================
+     *  AMBIL ITEM
+     * ==========================================================================*/
     $items = [];
 
     if ($isBuyNow) {
-
-        // ---------------------- MODE BUY NOW (1 item) ----------------------
         $bn        = $_SESSION['buy_now'];
         $productId = intval($bn['product_id'] ?? 0);
         $qty       = intval($bn['qty'] ?? ($bn['quantity'] ?? 1));
@@ -112,7 +123,6 @@ try {
             jsonRes(['success' => false, 'message' => 'Data Buy Now tidak valid'], 400);
         }
 
-        // Ambil produk langsung dari DB (hindari pakai data harga dari session)
         $stmt = $db->prepare("SELECT id, nama, harga, stok FROM produk WHERE id = ?");
         $stmt->execute([$productId]);
         $produk = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -122,23 +132,19 @@ try {
         }
 
         if ($qty > $produk['stok']) {
-            jsonRes([
-                'success' => false,
-                'message' => "Stok produk '{$produk['nama']}' tidak cukup"
-            ], 400);
+            jsonRes(['success' => false, 'message' => "Stok produk '{$produk['nama']}' tidak cukup"], 400);
         }
 
         $items[] = [
-            'product_id' => $produk['id'],
-            'nama'       => $produk['nama'],
-            'harga'      => $produk['harga'],
-            'stok'       => $produk['stok'],
-            'quantity'   => $qty,
+            "product_id" => $produk["id"],
+            "nama"       => $produk["nama"],
+            "harga"      => $produk["harga"],
+            "stok"       => $produk["stok"],
+            "quantity"   => $qty
         ];
 
     } else {
 
-        // ---------------------- MODE CART NORMAL ---------------------------
         $stmt = $db->prepare("
             SELECT 
                 c.id AS cart_id,
@@ -159,33 +165,29 @@ try {
         }
     }
 
-    /* =======================================================================
-     *  HITUNG SUBTOTAL + CEK STOK
-     * ==================================================================== */
+    /* ============================================================================
+     *   HITUNG SUBTOTAL + CEK STOK
+     * ==========================================================================*/
     $subtotal = 0;
 
-    foreach ($items as $item) {
-        if ($item['quantity'] > $item['stok']) {
-            jsonRes([
-                'success' => false,
-                'message' => "Stok produk '{$item['nama']}' tidak cukup"
-            ], 400);
+    foreach ($items as $i) {
+        if ($i['quantity'] > $i['stok']) {
+            jsonRes(['success' => false, 'message' => "Stok produk '{$i['nama']}' tidak cukup"], 400);
         }
 
-        $price     = $item['harga'];
-        $subtotal += $price * $item['quantity'];
+        $subtotal += $i['harga'] * $i['quantity'];
     }
 
-    /* =======================================================================
-     *  AMBIL ONGKIR BERDASARKAN KOTA
-     * ==================================================================== */
+    /* ============================================================================
+     *   AMBIL ONGKIR
+     * ==========================================================================*/
     $stmt = $db->prepare("SELECT ongkir FROM cities WHERE id = ?");
     $stmt->execute([$address['kota_id']]);
     $ongkir = floatval($stmt->fetchColumn() ?? 0);
 
-    /* =======================================================================
-     *  HITUNG DISKON VOUCHER (HANYA UNTUK CART NORMAL)
-     * ==================================================================== */
+    /* ============================================================================
+     *   HITUNG DISKON VOUCHER
+     * ==========================================================================*/
     $discount = 0;
 
     if (!$isBuyNow && $voucherCode !== "") {
@@ -204,7 +206,6 @@ try {
 
                 $discount = round($subtotal * floatval($voucher['diskon']) / 100);
 
-                // Maksimal diskon
                 if (
                     floatval($voucher['maksimal_diskon']) > 0 &&
                     $discount > floatval($voucher['maksimal_diskon'])
@@ -213,27 +214,27 @@ try {
                 }
 
             } else {
-                // Tipe nominal
                 $discount = floatval($voucher['diskon']);
             }
         }
     }
 
-    /* =======================================================================
-     *  HITUNG TOTAL AKHIR
-     * ==================================================================== */
+    /* ============================================================================
+     *   TOTAL AKHIR
+     * ==========================================================================*/
     $total = $subtotal + $ongkir - $discount;
 
-    /* =======================================================================
-     *  GENERATE KODE INVOICE
-     * ==================================================================== */
-    $invoice = "INV-" . date("YmdHis") . "-" . rand(100, 999);
+    /* ============================================================================
+     *   GENERATE ORDER CODE
+     * ==========================================================================*/
+    $orderCode = generateOrderCode($db);
 
-    /* =======================================================================
-     *  INSERT KE TABEL orders
-     * ==================================================================== */
+    /* ============================================================================
+     *   INSERT ORDERS
+     * ==========================================================================*/
     $stmt = $db->prepare("
         INSERT INTO orders (
+            order_code,
             user_id,
             address_id,
             metode_pembayaran_id,
@@ -242,14 +243,14 @@ try {
             potongan_voucher,
             kode_voucher,
             total_harga,
-            status
+            status,
+            tanggal_pesan
         )
-        VALUES (
-            ?, ?, ?, ?, ?, ?, ?, ?, 'pending'
-        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())
     ");
 
     $stmt->execute([
+        $orderCode,
         $userId,
         $addressId,
         $paymentMethodId,
@@ -262,66 +263,58 @@ try {
 
     $orderId = $db->lastInsertId();
 
-    /* =======================================================================
-     *  INSERT KE order_items + UPDATE STOK PRODUK
-     * ==================================================================== */
-    foreach ($items as $item) {
-        $price = $item['harga'];
+    /* ============================================================================
+     *   INSERT ORDER ITEMS + KURANGI STOK
+     * ==========================================================================*/
+    foreach ($items as $i) {
 
-        // Simpan item
         $oi = $db->prepare("
             INSERT INTO order_items (
-                order_id, 
-                produk_id, 
-                qty, 
-                harga_satuan, 
+                order_id,
+                produk_id,
+                qty,
+                harga_satuan,
                 subtotal
             )
             VALUES (?, ?, ?, ?, ?)
         ");
         $oi->execute([
             $orderId,
-            $item['product_id'],
-            $item['quantity'],
-            $price,
-            $price * $item['quantity']
+            $i['product_id'],
+            $i['quantity'],
+            $i['harga'],
+            $i['harga'] * $i['quantity']
         ]);
 
-        // Kurangi stok produk
         $upd = $db->prepare("UPDATE produk SET stok = stok - ? WHERE id = ?");
-        $upd->execute([$item['quantity'], $item['product_id']]);
+        $upd->execute([$i['quantity'], $i['product_id']]);
     }
 
-    /* =======================================================================
-     *  BERSIHKAN CART / BUY_NOW
-     * ==================================================================== */
+    /* ============================================================================
+     *   CLEAR CART / BUY NOW
+     * ==========================================================================*/
     if ($isBuyNow) {
-        // Buy Now: cukup hapus session buy_now
         unset($_SESSION['buy_now']);
     } else {
-        // Cart normal: kosongkan carts user
         $del = $db->prepare("DELETE FROM carts WHERE user_id = ?");
         $del->execute([$userId]);
     }
 
-    // Commit transaksi
     $db->commit();
 
     jsonRes([
-        "success"  => true,
-        "message"  => "Checkout berhasil",
-        "order_id" => $orderId,
-        "invoice"  => $invoice,
-        "total"    => $total,
-        "mode"     => $isBuyNow ? 'buynow' : 'cart'
+        "success"     => true,
+        "message"     => "Checkout berhasil",
+        "order_id"    => $orderId,
+        "order_code"  => $orderCode,
+        "total"       => $total,
+        "mode"        => $isBuyNow ? 'buynow' : 'cart'
     ]);
 
 } catch (Exception $e) {
     $db->rollBack();
-
     jsonRes([
         "success" => false,
-        "message" => $e->getMessage(),
-        "trace"   => $e->getTraceAsString()
+        "message" => $e->getMessage()
     ], 500);
 }
