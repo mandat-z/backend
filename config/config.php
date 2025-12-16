@@ -32,7 +32,7 @@ if (session_status() === PHP_SESSION_NONE) {
 // Optional: allow frontend (local) to call backend API during development
 if (php_sapi_name() !== 'cli') {
     if (!headers_sent()) {
-        header('Access-Control-Allow-Origin: ' . FRONTEND_URL);
+        header('Access-Control-Allow-Origin: *');
         header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
         header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
     }
@@ -93,9 +93,9 @@ if (!function_exists('get_db')) {
      * Return PDO instance (singleton)
      * @return PDO
      */
-    function get_db(): PDO {
+    function get_db(): PDO
+    {
         global $pdo;
         return $pdo;
     }
 }
-?>

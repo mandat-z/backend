@@ -1,12 +1,39 @@
 <?php
-// include config + layout fragments
 include __DIR__ . '/../config/config.php';
-include __DIR__ . '/../includes/head.php';        // DOCTYPE + <head> + open <body>
-include __DIR__ . '/../includes/navigation.php';  // sidebar
-include __DIR__ . '/../includes/topbar.php';      // topbar
+include __DIR__ . '/../includes/head.php';
+include __DIR__ . '/../includes/navigation.php';
+include __DIR__ . '/../includes/topbar.php';
 ?>
 
-<!-- [ Main Content ] start -->
+<style>
+    /* ===== SIMPLE CHART ===== */
+    .simple-chart {
+        display: flex;
+        align-items: flex-end;
+        gap: 6px;
+        height: 260px;
+        padding: 10px;
+        border-left: 1px solid #ddd;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .simple-bar {
+        flex: 1;
+        background: #4fc3f7;
+        border-radius: 4px 4px 0 0;
+        position: relative;
+    }
+
+    .simple-bar span {
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 11px;
+        color: #555;
+    }
+</style>
+
 <div class="pcoded-main-container">
     <div class="pcoded-wrapper">
         <div class="pcoded-content">
@@ -14,209 +41,131 @@ include __DIR__ . '/../includes/topbar.php';      // topbar
                 <div class="main-body">
                     <div class="page-wrapper">
 
-                        <!-- page header / breadcrumb -->
+                        <!-- HEADER -->
                         <div class="page-header">
                             <div class="page-block">
-                                <div class="row align-items-center">
-                                    <div class="col-md-12">
-                                        <div class="page-header-title">
-                                            <h5>Dashboard</h5>
-                                        </div>
-                                        <ul class="breadcrumb">
-                                            <li class="breadcrumb-item"><a href="<?= BASE_URL ?>/index.php"><i class="fas fa-home"></i></a></li>
-                                            <li class="breadcrumb-item"><a href="#!">Dashboard</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
+                                <h5>Dashboard</h5>
+                                <ul class="breadcrumb">
+                                    <li class="breadcrumb-item">
+                                        <a href="<?= BASE_URL ?>/index.php"><i class="fas fa-home"></i></a>
+                                    </li>
+                                    <li class="breadcrumb-item">Dashboard</li>
+                                </ul>
                             </div>
                         </div>
 
-                        <!-- summary cards -->
+                        <!-- SUMMARY -->
                         <div class="row">
-                            <div class="col-xl-3 col-md-6">
-                                <div class="card prod-p-card bg-c-blue">
-                                    <div class="card-body">
-                                        <div class="row align-items-center">
-                                            <div class="col">
-                                                <h6 class="m-b-5 text-white">Total Produk</h6>
-                                                <h3 class="m-b-0 text-white">1,234</h3>
+                            <?php
+                            $cards = [
+                                ['Total Produk', 'totalProduk', 'box', 'blue'],
+                                ['Total Pesanan', 'totalPesanan', 'shopping-cart', 'green'],
+                                ['Pendapatan', 'totalPendapatan', 'coins', 'yellow'],
+                                ['Total Pelanggan', 'totalPelanggan', 'users', 'red'],
+                            ];
+                            foreach ($cards as $c):
+                            ?>
+                                <div class="col-xl-3 col-md-6">
+                                    <div class="card prod-p-card bg-c-<?= $c[3] ?>">
+                                        <div class="card-body d-flex justify-content-between">
+                                            <div>
+                                                <h6 class="text-white"><?= $c[0] ?></h6>
+                                                <h3 class="text-white" id="<?= $c[1] ?>">0</h3>
                                             </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-box text-blue f-24"></i>
-                                            </div>
+                                            <i class="fas fa-<?= $c[2] ?> f-24 text-<?= $c[3] ?>"></i>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            <?php endforeach; ?>
+                        </div>
 
-                            <div class="col-xl-3 col-md-6">
-                                <div class="card prod-p-card bg-c-green">
-                                    <div class="card-body">
-                                        <div class="row align-items-center">
-                                            <div class="col">
-                                                <h6 class="m-b-5 text-white">Total Pesanan</h6>
-                                                <h3 class="m-b-0 text-white">587</h3>
-                                            </div>
-                                            <div class="col-auto">
-                                                <i class="fas fa-shopping-cart text-green f-24"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                            
-                        <!-- end summary cards -->
-
+                        <!-- CHART + QUICK -->
                         <div class="row">
-                            <!-- orders chart -->
-                            <div class="col-xl-8 col-md-12">
+                            <div class="col-xl-8">
                                 <div class="card">
                                     <div class="card-header">
-                                        <h5>Tren Pesanan</h5>
+                                        <h5>Tren Pesanan (30 Hari)</h5>
                                     </div>
                                     <div class="card-body">
-                                        <div id="ordersChart" style="height:300px;"></div>
+                                        <div id="ordersChart" class="text-center text-muted">Memuat grafik...</div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- quick links / stats -->
-                            <div class="col-xl-4 col-md-12">
+                            <div class="col-xl-4">
                                 <div class="card">
                                     <div class="card-header">
                                         <h5>Ringkasan Cepat</h5>
                                     </div>
                                     <div class="card-body">
                                         <ul class="list-group list-group-flush">
-                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                Produk aktif
-                                                <span class="badge badge-primary">1,120</span>
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                Stok Rendah <span class="badge badge-danger" id="stokRendah">0</span>
                                             </li>
-                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                Pesanan tertunda
-                                                <span class="badge badge-warning">42</span>
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                Pesanan Pending <span class="badge badge-warning" id="pesananPending">0</span>
                                             </li>
-                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                Pengembalian
-                                                <span class="badge badge-danger">8</span>
-                                            </li>
-                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                Stok rendah
-                                                <span class="badge badge-danger">23</span>
+                                            <li class="list-group-item d-flex justify-content-between">
+                                                Produk Aktif <span class="badge badge-primary" id="produkAktif">0</span>
                                             </li>
                                         </ul>
-
-                                        <hr>
-
-                                        <div class="row text-center">
-                                            <div class="col-6">
-                                                <a href="<?= BASE_URL ?>/pages/produk.php" class="btn btn-outline-primary btn-block"><i class="fas fa-box"></i> Produk</a>
-                                            </div>
-                                            <div class="col-6">
-                                                <a href="<?= BASE_URL ?>/pages/pesanan.php" class="btn btn-outline-success btn-block"><i class="fas fa-shopping-cart"></i> Pesanan</a>
-                                            </div>
-                                            <div class="col-6 mt-2">
-                                                <a href="<?= BASE_URL ?>/pages/pelanggan.php" class="btn btn-outline-info btn-block"><i class="fas fa-users"></i> Pelanggan</a>
-                                            </div>
-                                            <div class="col-6 mt-2">
-                                                <a href="<?= BASE_URL ?>/pages/laporan.php" class="btn btn-outline-warning btn-block"><i class="fas fa-file-alt"></i> Laporan</a>
-                                            </div>
-                                        </div>
-
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- top products + recent orders -->
+                        <!-- TABLES -->
                         <div class="row">
-                            <div class="col-xl-6 col-md-12">
-                                <div class="card table-card">
+                            <div class="col-xl-6">
+                                <div class="card">
                                     <div class="card-header">
                                         <h5>Top Produk</h5>
                                     </div>
-                                    <div class="card-body">
-                                        <div class="table-responsive">
-                                            <table class="table table-hover">
-                                                <thead>
-                                                    <tr>
-                                                        <th>#</th>
-                                                        <th>Produk</th>
-                                                        <th>Terjual</th>
-                                                        <th>Stok</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>1</td>
-                                                        <td>Produk A</td>
-                                                        <td>1,240</td>
-                                                        <td>56</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>2</td>
-                                                        <td>Produk B</td>
-                                                        <td>980</td>
-                                                        <td>12</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>3</td>
-                                                        <td>Produk C</td>
-                                                        <td>720</td>
-                                                        <td>0 <span class="badge badge-danger ml-2">Habis</span></td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                    <div class="card-body table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Produk</th>
+                                                    <th>Terjual</th>
+                                                    <th>Stok</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="topProdukBody">
+                                                <tr>
+                                                    <td colspan="4">Memuat...</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="col-xl-6 col-md-12">
-                                <div class="card table-card">
+                            <div class="col-xl-6">
+                                <div class="card">
                                     <div class="card-header">
                                         <h5>Pesanan Terbaru</h5>
                                     </div>
-                                    <div class="card-body">
-                                        <div class="table-responsive">
-                                            <table class="table table-hover">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Order</th>
-                                                        <th>Pelanggan</th>
-                                                        <th>Total</th>
-                                                        <th>Status</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td>#OR-00123</td>
-                                                        <td>Asep</td>
-                                                        <td>Rp 1.250.000</td>
-                                                        <td><span class="badge badge-warning">Pending</span></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>#OR-00122</td>
-                                                        <td>Siti</td>
-                                                        <td>Rp 450.000</td>
-                                                        <td><span class="badge badge-success">Selesai</span></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>#OR-00121</td>
-                                                        <td>Budi</td>
-                                                        <td>Rp 780.000</td>
-                                                        <td><span class="badge badge-danger">Dibatalkan</span></td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                    <div class="card-body table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Order</th>
+                                                    <th>Pelanggan</th>
+                                                    <th>Total</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="latestOrdersBody">
+                                                <tr>
+                                                    <td colspan="4">Memuat...</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <!-- end tables -->
 
                     </div>
                 </div>
@@ -224,26 +173,66 @@ include __DIR__ . '/../includes/topbar.php';      // topbar
         </div>
     </div>
 </div>
-<!-- [ Main Content ] end -->
 
-<!-- footer scripts -->
+<!-- FOOTER JS -->
 <script src="<?= ASSET ?>/js/vendor-all.min.js"></script>
 <script src="<?= ASSET ?>/plugins/bootstrap/js/bootstrap.min.js"></script>
 <script src="<?= ASSET ?>/js/pcoded.min.js"></script>
-<!-- optional page chart script (template has example) -->
-<script src="<?= ASSET ?>/js/pages/dashboard-analytics.js"></script>
-<script src="<?= ASSET ?>/js/pages/chart-morris-custom.js"></script>
-
 
 <script>
-    // placeholder chart init (if dashboard-analytics available it will override)
-    (function(){
-        if (typeof Morris === 'undefined' && document.getElementById('ordersChart')) {
-            // simple fallback: show message when chart lib not loaded
-            document.getElementById('ordersChart').innerHTML = '<div class="text-center text-muted" style="padding-top:110px">Chart library not loaded</div>';
+    const apiUrl = "<?= BASE_URL ?>/api/dashboard_analytics.php";
+
+    function rupiah(n) {
+        return 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+    }
+
+    function renderSimpleChart(data) {
+        const el = document.getElementById('ordersChart');
+        if (!data || data.length === 0) {
+            el.innerHTML = 'Tidak ada data';
+            return;
         }
-    })();
+        const max = Math.max(...data.map(d => +d.total));
+        el.className = 'simple-chart';
+        el.innerHTML = '';
+        data.forEach(d => {
+            const b = document.createElement('div');
+            b.className = 'simple-bar';
+            b.style.height = (max ? d.total / max * 100 : 0) + '%';
+            b.innerHTML = `<span>${d.total}</span>`;
+            el.appendChild(b);
+        });
+    }
+
+    fetch(apiUrl, {
+            credentials: 'include'
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (!res.success) return;
+
+            const s = res.summary;
+            totalProduk.innerText = s.total_produk;
+            totalPesanan.innerText = s.total_pesanan;
+            totalPendapatan.innerText = rupiah(s.pendapatan);
+            totalPelanggan.innerText = s.total_pelanggan;
+
+            stokRendah.innerText = s.stok_rendah;
+            pesananPending.innerText = s.pesanan_pending;
+            produkAktif.innerText = s.total_produk;
+
+            renderSimpleChart(res.order_trend);
+
+            topProdukBody.innerHTML = res.top_produk.map((p, i) => `
+        <tr><td>${i+1}</td><td>${p.nama}</td><td>${p.terjual}</td><td>${p.stok}</td></tr>
+    `).join('');
+
+            latestOrdersBody.innerHTML = res.latest_orders.map(o => `
+        <tr><td>${o.order_code}</td><td>${o.username}</td><td>${rupiah(o.total_harga)}</td><td>${o.status}</td></tr>
+    `).join('');
+        });
 </script>
 
 </body>
+
 </html>

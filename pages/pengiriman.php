@@ -1,8 +1,9 @@
-<?php 
+<?php
 include __DIR__ . '/../config/config.php';
 include __DIR__ . '/../includes/head.php';
 include __DIR__ . '/../includes/navigation.php';
 include __DIR__ . '/../includes/topbar.php';
+
 ?>
 
 <div class="pcoded-main-container">
@@ -12,113 +13,70 @@ include __DIR__ . '/../includes/topbar.php';
         <div class="main-body">
           <div class="page-wrapper">
 
-            <!-- Header Halaman -->
-            <div class="page-header">
+            <!-- PAGE HEADER -->
+            <div class="page-header mb-4">
               <div class="page-block">
-                <div class="row align-items-center">
-                  <div class="col-md-12">
-                    <div class="page-header-title">
-                      <h5>Kelola Pengiriman</h5>
-                    </div>
-                    <ul class="breadcrumb">
-                      <li class="breadcrumb-item">
-                        <a href="<?= BASE_URL ?>/index.php"><i class="fas fa-home"></i></a>
-                      </li>
-                      <li class="breadcrumb-item"><a href="#!">Kelola Pengiriman</a></li>
-                    </ul>
-                  </div>
-                </div>
+                <h5 class="m-0">Kelola Pengiriman & Ongkir</h5>
               </div>
             </div>
 
-            <!-- Daftar Pengiriman -->
             <section class="content">
               <div class="container-fluid">
+
+                <!-- ================= DAFTAR PENGIRIMAN ================= -->
                 <div class="card mb-4">
                   <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title mb-0">Daftar Pengiriman</h3>
+                    <h6 class="mb-0">Daftar Pengiriman</h6>
                   </div>
                   <div class="card-body table-responsive">
-                    <table id="tabelPengiriman" class="table table-bordered table-striped align-middle">
+                    <table class="table table-bordered table-striped align-middle">
                       <thead class="table-success">
                         <tr>
-                          <th>No</th>
-                          <th>ID Pengiriman</th>
-                          <th>Tanggal</th>
-                          <th>Kota Tujuan</th>
+                          <th width="5%">No</th>
+                          <th>Order</th>
+                          <th>Kota</th>
+                          <th>Kurir</th>
+                          <th>Resi</th>
                           <th>Status</th>
-                          <th>Aksi</th>
+                          <th width="10%">Aksi</th>
                         </tr>
                       </thead>
                       <tbody id="pengirimanBody">
                         <tr>
-                          <td>1</td>
-                          <td>#KIRIM001</td>
-                          <td>2025-10-17</td>
-                          <td>Bandung</td>
-                          <td><span class="badge bg-warning">Dalam Proses</span></td>
-                          <td>
-                            <button class="btn btn-primary btn-sm edit-btn"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-danger btn-sm delete-btn"><i class="fas fa-trash"></i></button>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>2</td>
-                          <td>#KIRIM002</td>
-                          <td>2025-10-18</td>
-                          <td>Solo</td>
-                          <td><span class="badge bg-success">Terkirim</span></td>
-                          <td>
-                            <button class="btn btn-primary btn-sm edit-btn"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-danger btn-sm delete-btn"><i class="fas fa-trash"></i></button>
-                          </td>
+                          <td colspan="7" class="text-center">Memuat data...</td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
                 </div>
 
-                <!-- Biaya Pengiriman -->
+                <!-- ================= ONGKIR / CITIES ================= -->
                 <div class="card">
                   <div class="card-header d-flex justify-content-between align-items-center">
-                    <h3 class="card-title mb-0">Daftar Biaya Pengiriman</h3>
-                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#tambahBiayaModal">
-                      <i class="fas fa-plus"></i> Tambah Biaya
+                    <h6 class="mb-0">Kelola Ongkir (Cities)</h6>
+                    <button type="button" class="btn btn-success btn-sm" id="btnTambahKota">
+                      Tambah Kota
                     </button>
                   </div>
                   <div class="card-body table-responsive">
-                    <table id="tabelBiaya" class="table table-bordered table-striped align-middle">
+                    <table class="table table-bordered table-striped align-middle">
                       <thead class="table-success">
                         <tr>
-                          <th>No</th>
-                          <th>Kota Tujuan</th>
-                          <th>Biaya (Rp)</th>
-                          <th>Aksi</th>
+                          <th width="5%">No</th>
+                          <th>Kota</th>
+                          <th>Ongkir (Rp)</th>
+                          <th width="15%">Aksi</th>
                         </tr>
                       </thead>
-                      <tbody id="biayaBody">
+                      <tbody id="cityBody">
                         <tr>
-                          <td>1</td>
-                          <td>Bandung</td>
-                          <td>10.000</td>
-                          <td>
-                            <button class="btn btn-primary btn-sm edit-btn"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-danger btn-sm delete-btn"><i class="fas fa-trash"></i></button>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>2</td>
-                          <td>Solo</td>
-                          <td>20.000</td>
-                          <td>
-                            <button class="btn btn-primary btn-sm edit-btn"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-danger btn-sm delete-btn"><i class="fas fa-trash"></i></button>
-                          </td>
+                          <td colspan="4" class="text-center">Memuat data...</td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
                 </div>
+
               </div>
             </section>
 
@@ -129,129 +87,345 @@ include __DIR__ . '/../includes/topbar.php';
   </div>
 </div>
 
-<!-- Modal Tambah Pengiriman -->
-<div class="modal fade" id="tambahPengirimanModal" tabindex="-1">
-  <div class="modal-dialog">
-    <form id="formTambahPengiriman">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Tambah Pengiriman</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- ================= MODAL UPDATE PENGIRIMAN ================= -->
+<div class="modal fade" id="modalShipping" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form id="formShipping" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Update Pengiriman</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="ship_id">
+
+        <div class="form-group">
+          <label>Kurir</label>
+          <input type="text" id="ship_kurir" class="form-control" required>
         </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label">Kota Tujuan</label>
-            <input type="text" name="kota" class="form-control" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Tanggal</label>
-            <input type="date" name="tanggal" class="form-control" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Status</label>
-            <select name="status" class="form-select">
-              <option value="Dalam Proses">Dalam Proses</option>
-              <option value="Terkirim">Terkirim</option>
-              <option value="Dibatalkan">Dibatalkan</option>
-            </select>
-          </div>
+
+        <div class="form-group">
+          <label>Nomor Resi</label>
+          <input type="text" id="ship_resi" class="form-control">
         </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-success">Simpan</button>
+
+        <div class="form-group">
+          <label>Status</label>
+          <select id="ship_status" class="form-control">
+            <option value="Diproses">Diproses</option>
+            <option value="Dikirim">Dikirim</option>
+            <option value="Terkirim">Terkirim</option>
+          </select>
         </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-success" type="submit">Simpan</button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- Modal Tambah Biaya -->
-<div class="modal fade" id="tambahBiayaModal" tabindex="-1">
-  <div class="modal-dialog">
-    <form id="formTambahBiaya">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Tambah Biaya Pengiriman</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<!-- ================= MODAL ONGKIR ================= -->
+<div class="modal fade" id="modalCity" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <form id="formCity" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Ongkir Kota</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="city_id">
+
+        <div class="form-group">
+          <label>Nama Kota</label>
+          <input type="text" id="city_name" class="form-control" required>
         </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label">Kota Tujuan</label>
-            <input type="text" name="kota" class="form-control" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Biaya (Rp)</label>
-            <input type="number" name="biaya" class="form-control" required>
-          </div>
+
+        <div class="form-group">
+          <label>Ongkir</label>
+          <input type="number" id="city_ongkir" class="form-control" required min="0">
         </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-success">Simpan</button>
-        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-success" type="submit">Simpan</button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- Script JS -->
+<!-- ================= VENDOR SCRIPT (SAMA DENGAN PAGE PEMBAYARAN) ================= -->
 <script src="../assets/js/vendor-all.min.js"></script>
-<script src="../assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="../assets/plugins/bootstrap/js/bootstrap.min.js"></script>
 <script src="../assets/js/pcoded.min.js"></script>
 
+<!-- ================= CUSTOM SCRIPT ================= -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Tambah Pengiriman
-  const formPengiriman = document.getElementById('formTambahPengiriman');
-  formPengiriman.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const kota = this.kota.value;
-    const tanggal = this.tanggal.value;
-    const status = this.status.value;
-    const table = document.getElementById('pengirimanBody');
-    const rowCount = table.rows.length + 1;
-    const row = `
-      <tr>
-        <td>${rowCount}</td>
-        <td>#KIRIM00${rowCount}</td>
-        <td>${tanggal}</td>
-        <td>${kota}</td>
-        <td><span class="badge bg-warning">${status}</span></td>
-        <td>
-          <button class="btn btn-primary btn-sm edit-btn"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-danger btn-sm delete-btn"><i class="fas fa-trash"></i></button>
-        </td>
-      </tr>`;
-    table.insertAdjacentHTML('beforeend', row);
-    this.reset();
-    bootstrap.Modal.getInstance(document.getElementById('tambahPengirimanModal')).hide();
-  });
+  document.addEventListener("DOMContentLoaded", () => {
+    const API = "<?= BASE_URL ?>/api";
 
-  // Tambah Biaya
-  const formBiaya = document.getElementById('formTambahBiaya');
-  formBiaya.addEventListener('submit', function(e) {
-    e.preventDefault();
-    const kota = this.kota.value;
-    const biaya = this.biaya.value;
-    const table = document.getElementById('biayaBody');
-    const rowCount = table.rows.length + 1;
-    const row = `
-      <tr>
-        <td>${rowCount}</td>
-        <td>${kota}</td>
-        <td>${parseInt(biaya).toLocaleString('id-ID')}</td>
-        <td>
-          <button class="btn btn-primary btn-sm edit-btn"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-danger btn-sm delete-btn"><i class="fas fa-trash"></i></button>
-        </td>
-      </tr>`;
-    table.insertAdjacentHTML('beforeend', row);
-    this.reset();
-    bootstrap.Modal.getInstance(document.getElementById('tambahBiayaModal')).hide();
-  });
+    // Elements
+    const pengirimanBody = document.getElementById("pengirimanBody");
+    const cityBody = document.getElementById("cityBody");
 
-  // Hapus baris
-  document.body.addEventListener('click', function(e) {
-    if (e.target.closest('.delete-btn')) {
-      e.target.closest('tr').remove();
+    const formShipping = document.getElementById("formShipping");
+    const shipId = document.getElementById("ship_id");
+    const shipKurir = document.getElementById("ship_kurir");
+    const shipResi = document.getElementById("ship_resi");
+    const shipStatus = document.getElementById("ship_status");
+
+    const formCity = document.getElementById("formCity");
+    const cityId = document.getElementById("city_id");
+    const cityName = document.getElementById("city_name");
+    const cityOngkir = document.getElementById("city_ongkir");
+    const btnTambahKota = document.getElementById("btnTambahKota");
+
+    const esc = (s) => String(s ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+    async function safeJson(res) {
+      const text = await res.text();
+      try {
+        return JSON.parse(text);
+      } catch {
+        return {
+          success: false,
+          message: text
+        };
+      }
     }
+
+    /* ===================== SHIPPING ===================== */
+    async function loadShipping() {
+      pengirimanBody.innerHTML = `<tr><td colspan="7" class="text-center">Memuat data...</td></tr>`;
+
+      try {
+        const res = await fetch(API + "/shipping_list.php", {
+          credentials: "same-origin"
+        });
+        const j = await safeJson(res);
+
+        if (!j.success) {
+          pengirimanBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Gagal memuat data pengiriman</td></tr>`;
+          return;
+        }
+
+        if (!j.data || !j.data.length) {
+          pengirimanBody.innerHTML = `<tr><td colspan="7" class="text-center">Tidak ada data</td></tr>`;
+          return;
+        }
+
+        pengirimanBody.innerHTML = "";
+        j.data.forEach((r, i) => {
+          const kurir = r.kurir ? esc(r.kurir) : "-";
+          const resi = r.no_resi ? esc(r.no_resi) : "-";
+          const status = esc(r.status_pengiriman || "-");
+
+          pengirimanBody.insertAdjacentHTML("beforeend", `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${esc(r.order_code)}</td>
+            <td>${esc(r.nama_kota)}</td>
+            <td>${kurir}</td>
+            <td>${resi}</td>
+            <td>${status}</td>
+            <td>
+              <button type="button"
+                class="btn btn-sm btn-primary btnEditShipping"
+                data-order-id="${esc(r.order_id)}"
+                data-kurir="${esc(r.kurir || "")}"
+                data-resi="${esc(r.no_resi || "")}"
+                data-status="${esc(r.status_pengiriman || "Diproses")}">
+                Edit
+              </button>
+            </td>
+          </tr>
+        `);
+        });
+
+        // bind edit buttons
+        document.querySelectorAll(".btnEditShipping").forEach(btn => {
+          btn.addEventListener("click", () => {
+            shipId.value = btn.dataset.orderId;
+            shipKurir.value = btn.dataset.kurir || "";
+            shipResi.value = btn.dataset.resi || "";
+            shipStatus.value = btn.dataset.status || "Diproses";
+            $("#modalShipping").modal("show");
+          });
+        });
+
+      } catch (e) {
+        pengirimanBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Error: ${esc(e.message)}</td></tr>`;
+      }
+    }
+
+    formShipping.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      try {
+        const payload = {
+          order_id: shipId.value,
+          no_resi: shipResi.value,
+          status_pengiriman: shipStatus.value
+        };
+
+        const res = await fetch(API + "/shipping_update.php", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload),
+          credentials: "same-origin"
+        });
+
+        const j = await safeJson(res);
+        if (!j.success) {
+          alert(j.message || "Gagal update pengiriman");
+          return;
+        }
+
+        $("#modalShipping").modal("hide");
+        loadShipping();
+      } catch (e) {
+        alert("Error: " + e.message);
+      }
+    });
+
+    /* ===================== CITIES ===================== */
+    async function loadCities() {
+      cityBody.innerHTML = `<tr><td colspan="4" class="text-center">Memuat data...</td></tr>`;
+
+      try {
+        const res = await fetch(API + "/cities_list.php", {
+          credentials: "same-origin"
+        });
+        const j = await safeJson(res);
+
+        if (!j.success) {
+          cityBody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Gagal memuat data kota</td></tr>`;
+          return;
+        }
+
+        if (!j.data || !j.data.length) {
+          cityBody.innerHTML = `<tr><td colspan="4" class="text-center">Belum ada kota</td></tr>`;
+          return;
+        }
+
+        cityBody.innerHTML = "";
+        j.data.forEach((r, i) => {
+          cityBody.insertAdjacentHTML("beforeend", `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${esc(r.nama_kota)}</td>
+            <td>${Number(r.ongkir || 0).toLocaleString("id-ID")}</td>
+            <td>
+              <button type="button"
+                class="btn btn-sm btn-primary btnEditCity"
+                data-order-id="${esc(r.order_id)}"
+                data-nama="${esc(r.nama_kota)}"
+                data-ongkir="${esc(r.ongkir)}">
+                Edit
+              </button>
+              <button type="button"
+                class="btn btn-sm btn-danger btnDeleteCity"
+                data-order-id="${esc(r.order_id)}">
+                Hapus
+              </button>
+            </td>
+          </tr>
+        `);
+        });
+
+        document.querySelectorAll(".btnEditCity").forEach(btn => {
+          btn.addEventListener("click", () => {
+            cityId.value = btn.dataset.id;
+            cityName.value = btn.dataset.nama;
+            cityOngkir.value = btn.dataset.ongkir;
+            $("#modalCity").modal("show");
+          });
+        });
+
+        document.querySelectorAll(".btnDeleteCity").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+            if (!confirm("Hapus kota ini?")) return;
+
+            const res = await fetch(API + "/cities_delete.php", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                id
+              }),
+              credentials: "same-origin"
+            });
+
+            const j = await safeJson(res);
+            if (!j.success) {
+              alert(j.message || "Gagal hapus kota");
+              return;
+            }
+            loadCities();
+          });
+        });
+
+      } catch (e) {
+        cityBody.innerHTML = `<tr><td colspan="4" class="text-center text-danger">Error: ${esc(e.message)}</td></tr>`;
+      }
+    }
+
+    btnTambahKota.addEventListener("click", () => {
+      cityId.value = "";
+      cityName.value = "";
+      cityOngkir.value = "";
+      $("#modalCity").modal("show");
+    });
+
+    formCity.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      try {
+        const payload = {
+          id: cityId.value,
+          nama_kota: cityName.value,
+          ongkir: cityOngkir.value
+        };
+
+        const res = await fetch(API + "/cities_save.php", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload),
+          credentials: "same-origin"
+        });
+
+        const j = await safeJson(res);
+        if (!j.success) {
+          alert(j.message || "Gagal simpan kota");
+          return;
+        }
+
+        $("#modalCity").modal("hide");
+        loadCities();
+      } catch (e) {
+        alert("Error: " + e.message);
+      }
+    });
+
+    // init
+    loadShipping();
+    loadCities();
   });
-});
 </script>

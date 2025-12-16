@@ -3,14 +3,6 @@ session_start();
 include_once __DIR__ . '/../config/config.php';
 header('Content-Type: application/json; charset=utf-8');
 
-// =============================================
-// Require admin session
-// =============================================
-if (!isset($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'admin') {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Forbidden']);
-    exit;
-}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
@@ -28,10 +20,7 @@ try {
     if ($id) {
         $stmt = $db->prepare('
             SELECT 
-                o.id, o.user_id, o.subtotal, o.ongkir, o.total_harga, 
-                o.status, o.tanggal_pesan, o.tanggal_sampai,
-                o.address_id, o.metode_pembayaran_id,
-                
+                o.*, 
                 u.username, u.email, u.phone as user_phone,
 
                 ua.nama_penerima, ua.jalan, ua.rt_rw, ua.kelurahan, ua.kecamatan,
@@ -45,7 +34,6 @@ try {
             LEFT JOIN user_addresses ua ON o.address_id = ua.id
             LEFT JOIN cities c ON ua.kota_id = c.id
             LEFT JOIN metode_pembayaran pm ON o.metode_pembayaran_id = pm.id_metode
-
             WHERE o.id = :id
         ');
         $stmt->execute([':id' => $id]);
@@ -58,21 +46,24 @@ try {
         }
 
         // =============================================================
-        // GET ORDER ITEMS
+        // GET ORDER ITEMS (FIXED product_id -> produk_id)
         // =============================================================
         $stmt = $db->prepare('
             SELECT 
-                oi.qty, oi.harga_satuan, oi.subtotal,
-                p.nama as product_name, p.foto
+                oi.qty, 
+                oi.harga_satuan, 
+                oi.subtotal,
+                p.nama as product_name, 
+                p.foto
             FROM order_items oi
-            JOIN produk p ON oi.product_id = p.id
+            JOIN produk p ON oi.produk_id = p.id
             WHERE oi.order_id = :order_id
         ');
         $stmt->execute([':order_id' => $id]);
         $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // =============================================================
-        // PAYMENT INFO (opsional)
+        // PAYMENT INFO
         // =============================================================
         $stmt = $db->prepare('
             SELECT 
@@ -82,6 +73,7 @@ try {
             FROM pembayaran_order po
             LEFT JOIN metode_pembayaran pm ON po.id_metode = pm.id_metode
             WHERE po.id_order = :order_id
+            LIMIT 1
         ');
         $stmt->execute([':order_id' => $id]);
         $payment = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -96,11 +88,12 @@ try {
     }
 
     // =============================================================
-    // GET ALL ORDERS (no detail)
+    // GET ALL ORDERS
     // =============================================================
     $stmt = $db->query('
         SELECT 
-            o.id, o.user_id, o.subtotal, o.ongkir, o.total_harga,
+            o.id, o.order_code, o.user_id, 
+            o.subtotal, o.ongkir, o.total_harga,
             o.status, o.tanggal_pesan,
             u.username, u.email
         FROM orders o
@@ -111,10 +104,7 @@ try {
     $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode(['success' => true, 'data' => $orders]);
-
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
-
-?>

@@ -3,11 +3,6 @@
 include_once __DIR__ . '/../config/config.php';
 header('Content-Type: application/json; charset=utf-8');
 
-// optional admin check (adjust to your auth)
-if (!isset($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'admin') {
-    // If you want public list for admin UI remove this or adjust
-     http_response_code(403); echo json_encode(['success'=>false,'message'=>'Forbidden']); exit;
-}
 
 try {
     $db = get_db();

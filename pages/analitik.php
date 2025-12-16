@@ -1,73 +1,38 @@
 <?php
-include_once __DIR__ . '/../config/config.php';
+include __DIR__ . '/../config/config.php';
 include __DIR__ . '/../includes/head.php';
 include __DIR__ . '/../includes/navigation.php';
 include __DIR__ . '/../includes/topbar.php';
-
-// prepare data for charts (best-effort; if tables missing show empty)
-$visitors_data = [];
-$sales_data = [];
-$top_products = [];
-
-try {
-    $db = get_db();
-
-    // visitors per day (expects table `visits` with `created_at` timestamp)
-    try {
-        $sth = $db->query("SELECT DATE(created_at) dt, COUNT(*) cnt FROM visits GROUP BY DATE(created_at) ORDER BY dt DESC LIMIT 30");
-        $rows = $sth->fetchAll();
-        if ($rows) {
-            $visitors_data = array_reverse(array_map(function($r){ return ['date'=>$r['dt'],'value'=> (int)$r['cnt']]; }, $rows));
-        }
-    } catch (Exception $e) {
-        // leave visitors_data empty
-    }
-
-    // sales per day (expects table `orders` with `created_at` and `total`)
-    try {
-        $sth = $db->query("SELECT DATE(created_at) dt, SUM(total) total, COUNT(*) orders_count FROM orders GROUP BY DATE(created_at) ORDER BY dt DESC LIMIT 30");
-        $rows = $sth->fetchAll();
-        if ($rows) {
-            $sales_data = array_reverse(array_map(function($r){ return ['date'=>$r['dt'],'total'=> (float)$r['total'], 'orders'=>(int)$r['orders_count']]; }, $rows));
-        }
-    } catch (Exception $e) {
-        // leave sales_data empty
-    }
-
-    // top products (try order_items -> product_id, quantity; fallback to produk table if has 'sold' or similar)
-    try {
-        $sth = $db->query("SELECT oi.product_id, p.nama, SUM(oi.quantity) sold_qty
-                            FROM order_items oi
-                            JOIN produk p ON p.id = oi.product_id
-                            GROUP BY oi.product_id
-                            ORDER BY sold_qty DESC
-                            LIMIT 10");
-        $rows = $sth->fetchAll();
-        if ($rows) {
-            foreach ($rows as $r) {
-                $top_products[] = $r;
-            }
-        } else {
-            // fallback: top by stok small (not ideal) or by a 'sold' column if exists
-            $sth2 = $db->query("SELECT id, nama, 0 as sold_qty FROM produk ORDER BY id DESC LIMIT 10");
-            $rows2 = $sth2->fetchAll();
-            foreach ($rows2 as $r) $top_products[] = $r;
-        }
-    } catch (Exception $e) {
-        // fallback to produk simple list
-        try {
-            $sth2 = $db->query("SELECT id, nama, 0 as sold_qty FROM produk ORDER BY id DESC LIMIT 10");
-            $rows2 = $sth2->fetchAll();
-            foreach ($rows2 as $r) $top_products[] = $r;
-        } catch (Exception $e2) {
-            // nothing
-        }
-    }
-
-} catch (Exception $e) {
-    // DB not available; keep arrays empty
-}
 ?>
+
+<style>
+    /* sederhana, stabil, tidak tergantung plugin tambahan */
+    .kpi-card .card-body {
+        padding: 18px;
+    }
+
+    .kpi-card h4 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .kpi-card p {
+        margin: 6px 0 0;
+        color: #6c757d;
+    }
+
+    /* placeholder loading / error */
+    .block-placeholder {
+        height: 260px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        background: #fafafa;
+        border: 1px dashed #e1e1e1;
+        border-radius: 6px;
+    }
+</style>
 
 <div class="pcoded-main-container">
     <div class="pcoded-wrapper">
@@ -76,83 +41,101 @@ try {
                 <div class="main-body">
                     <div class="page-wrapper">
 
-                        <div class="page-header">
+                        <!-- HEADER -->
+                        <div class="page-header mb-4">
                             <div class="page-block">
                                 <div class="row align-items-center">
                                     <div class="col-md-12">
                                         <div class="page-header-title">
-                                            <h5>Analitik</h5>
+                                            <h5>Dashboard Analitik</h5>
                                         </div>
                                         <ul class="breadcrumb">
-                                            <li class="breadcrumb-item"><a href="../index.php"><i class="fas fa-home"></i></a></li>
-                                            <li class="breadcrumb-item"><a href="#!">Analitik</a></li>
+                                            <li class="breadcrumb-item">
+                                                <a href="<?= BASE_URL ?>/index.php"><i class="fas fa-home"></i></a>
+                                            </li>
+                                            <li class="breadcrumb-item">Analitik</li>
                                         </ul>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- laporan row -->
-                        <div class="row">
+                        <!-- ALERT AREA -->
+                        <div id="alertBox"></div>
 
-                            <!-- Laporan Pengunjung -->
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header"><h5>Laporan Pengunjung (30 hari terakhir)</h5></div>
+                        <!-- KPI -->
+                        <div class="row" id="kpiBox">
+                            <div class="col-md-4">
+                                <div class="card kpi-card text-center">
                                     <div class="card-body">
-                                        <?php if (!empty($visitors_data)): ?>
-                                            <div id="visitorsChart" style="height:250px;"></div>
-                                        <?php else: ?>
-                                            <div class="alert alert-secondary">Data pengunjung belum tersedia. Pastikan tabel <code>visits</code> ada atau integrasi tracking telah aktif.</div>
-                                        <?php endif; ?>
+                                        <h4>0</h4>
+                                        <p>Total User</p>
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Laporan Penjualan -->
-                            <div class="col-md-6">
-                                <div class="card">
-                                    <div class="card-header"><h5>Laporan Penjualan (30 hari terakhir)</h5></div>
+                            <div class="col-md-4">
+                                <div class="card kpi-card text-center">
                                     <div class="card-body">
-                                        <?php if (!empty($sales_data)): ?>
-                                            <div id="salesChart" style="height:250px;"></div>
-                                        <?php else: ?>
-                                            <div class="alert alert-secondary">Data penjualan belum tersedia. Pastikan tabel <code>orders</code> ada dan memiliki kolom <code>total</code>.</div>
-                                        <?php endif; ?>
+                                        <h4>0</h4>
+                                        <p>Total Order</p>
                                     </div>
                                 </div>
                             </div>
-
+                            <div class="col-md-4">
+                                <div class="card kpi-card text-center">
+                                    <div class="card-body">
+                                        <h4>Rp 0</h4>
+                                        <p>Total Omzet</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Produk Terlaris -->
-                        <div class="row">
-                            <div class="col-md-12">
+                        <!-- CHARTS -->
+                        <div class="row mt-3">
+                            <div class="col-md-6">
                                 <div class="card">
-                                    <div class="card-header"><h5>Produk Terlaris</h5></div>
+                                    <div class="card-header">
+                                        <h6 class="mb-0">User Baru (30 Hari)</h6>
+                                    </div>
                                     <div class="card-body">
-                                        <?php if (!empty($top_products)): ?>
-                                            <div class="table-responsive">
-                                                <table class="table table-striped">
-                                                    <thead>
-                                                        <tr><th>#</th><th>Nama Produk</th><th>Terjual</th></tr>
-                                                    </thead>
-                                                    <tbody>
-                                                    <?php $i=1; foreach ($top_products as $tp): ?>
-                                                        <tr>
-                                                            <td><?= $i++ ?></td>
-                                                            <td><?= htmlspecialchars($tp['nama'] ?? 'N/A') ?></td>
-                                                            <td><?= intval($tp['sold_qty'] ?? 0) ?></td>
-                                                        </tr>
-                                                    <?php endforeach; ?>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        <?php else: ?>
-                                            <div class="alert alert-secondary">Tidak ada data produk terlaris. Pastikan tabel <code>order_items</code> atau <code>produk</code> ada.</div>
-                                        <?php endif; ?>
+                                        <div id="userChart" class="block-placeholder">Memuat grafik...</div>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0">Omzet Penjualan (30 Hari)</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="salesChart" class="block-placeholder">Memuat grafik...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TABLE -->
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h6 class="mb-0">Produk Terlaris</h6>
+                            </div>
+                            <div class="card-body table-responsive">
+                                <table class="table table-striped mb-0" id="produkTable">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:60px;">No</th>
+                                            <th>Produk</th>
+                                            <th style="width:120px;">Terjual</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="3" class="text-muted">Memuat...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
@@ -163,41 +146,147 @@ try {
     </div>
 </div>
 
-<!-- include required scripts for charts -->
+<!-- SCRIPT: Pastikan vendor jquery sudah ada dari template Anda.
+     Kalau template Anda tidak include jquery, tambahkan jquery sebelum morris. -->
 <script src="<?= ASSET ?>/plugins/chart-morris/js/raphael.min.js"></script>
 <script src="<?= ASSET ?>/plugins/chart-morris/js/morris.min.js"></script>
 
 <script>
-    // pass PHP data to JS
-    const visitorsData = <?= json_encode(array_values($visitors_data)) ?: '[]' ?>;
-    const salesDataRaw = <?= json_encode(array_values($sales_data)) ?: '[]' ?>;
+    const API_URL = "<?= BASE_URL ?>/api/analytics.php";
 
-    // Morris expects objects with x/y
-    if (visitorsData.length) {
-        const vData = visitorsData.map(d => ({ y: d.date, a: d.value }));
-        new Morris.Line({
-            element: 'visitorsChart',
-            data: vData,
-            xkey: 'y',
-            ykeys: ['a'],
-            labels: ['Pengunjung'],
-            resize: true,
-            lineColors: ['#1f77b4'],
-            parseTime: false
-        });
+    function rupiah(n) {
+        return 'Rp ' + Number(n || 0).toLocaleString('id-ID');
     }
 
-    if (salesDataRaw.length) {
-        const sData = salesDataRaw.map(d => ({ y: d.date, total: parseFloat(d.total) }));
-        new Morris.Bar({
-            element: 'salesChart',
-            data: sData,
-            xkey: 'y',
-            ykeys: ['total'],
-            labels: ['Total (Rp)'],
-            resize: true,
-            barColors: ['#28a745'],
-            parseTime: false
-        });
+    function showAlert(type, msg) {
+        document.getElementById('alertBox').innerHTML =
+            `<div class="alert alert-${type}">${msg}</div>`;
     }
+
+    function setLoadingPlaceholders() {
+        document.getElementById('userChart').className = 'block-placeholder';
+        document.getElementById('salesChart').className = 'block-placeholder';
+        document.getElementById('userChart').innerText = 'Memuat grafik...';
+        document.getElementById('salesChart').innerText = 'Memuat grafik...';
+    }
+
+    function setEmptyChart(elId, text) {
+        const el = document.getElementById(elId);
+        el.className = 'block-placeholder';
+        el.innerText = text || 'Tidak ada data';
+    }
+
+    function safeTableEmpty(text) {
+        document.querySelector("#produkTable tbody").innerHTML =
+            `<tr><td colspan="3" class="text-muted">${text || 'Tidak ada data'}</td></tr>`;
+    }
+
+    setLoadingPlaceholders();
+
+    fetch(API_URL, {
+            credentials: 'include'
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        })
+        .then(res => {
+            if (!res || res.success !== true) {
+                showAlert('warning', 'Gagal memuat data analitik (akses/response tidak valid).');
+                setEmptyChart('userChart', 'Tidak ada data');
+                setEmptyChart('salesChart', 'Tidak ada data');
+                safeTableEmpty('Tidak ada data');
+                return;
+            }
+
+            // KPI
+            document.getElementById("kpiBox").innerHTML = `
+        <div class="col-md-4">
+          <div class="card kpi-card text-center">
+            <div class="card-body">
+              <h4>${res.summary?.total_user ?? 0}</h4>
+              <p>Total User</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card kpi-card text-center">
+            <div class="card-body">
+              <h4>${res.summary?.total_order ?? 0}</h4>
+              <p>Total Order</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card kpi-card text-center">
+            <div class="card-body">
+              <h4>${rupiah(res.summary?.total_omzet ?? 0)}</h4>
+              <p>Total Omzet</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+            // Charts
+            const userData = Array.isArray(res.user) ? res.user : [];
+            const salesData = Array.isArray(res.sales) ? res.sales : [];
+
+            if (!userData.length) {
+                setEmptyChart('userChart', 'Data user belum tersedia');
+            } else {
+                // Pastikan container kosong (hapus placeholder)
+                document.getElementById('userChart').className = '';
+                document.getElementById('userChart').innerHTML = '';
+                new Morris.Line({
+                    element: 'userChart',
+                    data: userData,
+                    xkey: 'tanggal',
+                    ykeys: ['total'],
+                    labels: ['User'],
+                    parseTime: false,
+                    resize: true
+                });
+            }
+
+            if (!salesData.length) {
+                setEmptyChart('salesChart', 'Data penjualan belum tersedia');
+            } else {
+                document.getElementById('salesChart').className = '';
+                document.getElementById('salesChart').innerHTML = '';
+                new Morris.Bar({
+                    element: 'salesChart',
+                    data: salesData,
+                    xkey: 'tanggal',
+                    ykeys: ['total'],
+                    labels: ['Omzet'],
+                    parseTime: false,
+                    resize: true
+                });
+            }
+
+            // Table Produk
+            const produk = Array.isArray(res.produk) ? res.produk : [];
+            if (!produk.length) {
+                safeTableEmpty('Belum ada data produk terlaris');
+            } else {
+                document.querySelector("#produkTable tbody").innerHTML = produk.map((p, i) => `
+          <tr>
+            <td>${i+1}</td>
+            <td>${(p.nama || '').toString()}</td>
+            <td>${Number(p.terjual || 0).toLocaleString('id-ID')}</td>
+          </tr>
+        `).join('');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showAlert('danger', 'Gagal memuat API analitik. Cek URL API / session admin / error server.');
+            setEmptyChart('userChart', 'Gagal memuat');
+            setEmptyChart('salesChart', 'Gagal memuat');
+            safeTableEmpty('Gagal memuat');
+        });
 </script>
+
+</body>
+
+</html>
