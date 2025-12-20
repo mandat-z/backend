@@ -3,10 +3,42 @@ session_start();
 header("Content-Type: application/json");
 require_once __DIR__ . '/../config/config.php';
 
-if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
-    echo json_encode(["success" => false]);
+/*
+|--------------------------------------------------------------------------
+| PREVIEW MODE (DEV ONLY)
+|--------------------------------------------------------------------------
+*/
+if (isset($_GET['preview']) && $_GET['preview'] == '1') {
+    echo json_encode([
+        "success" => true,
+        "summary" => ["total_user" => 123, "total_order" => 45, "total_omzet" => 67890000],
+        "user" => array_map(function ($i) {
+            return ["tanggal" => date('Y-m-d', strtotime("-{$i} days")), "total" => rand(0, 10)];
+        }, range(29, 0)),
+        "sales" => array_map(function ($i) {
+            return ["tanggal" => date('Y-m-d', strtotime("-{$i} days")), "total" => rand(100000, 1000000)];
+        }, range(29, 0)),
+        "produk" => [
+            ["nama" => "Produk A", "terjual" => 120],
+            ["nama" => "Produk B", "terjual" => 85]
+        ]
+    ]);
     exit;
 }
+
+/*
+|--------------------------------------------------------------------------
+| AUTH ADMIN (NONAKTIF SEMENTARA)
+|--------------------------------------------------------------------------
+| Aktifkan kembali setelah login admin siap
+*/
+// if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+//     echo json_encode([
+//         "success" => false,
+//         "message" => "Not authenticated as admin."
+//     ]);
+//     exit;
+// }
 
 $db = get_db();
 

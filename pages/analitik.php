@@ -32,6 +32,26 @@ include __DIR__ . '/../includes/topbar.php';
         border: 1px dashed #e1e1e1;
         border-radius: 6px;
     }
+
+    /* tambahan styling chart modern */
+    .chart-box {
+        height: 320px;
+        position: relative;
+    }
+
+    .chart-legend {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-top: 12px;
+    }
+
+    .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+    }
 </style>
 
 <div class="pcoded-main-container">
@@ -146,13 +166,13 @@ include __DIR__ . '/../includes/topbar.php';
     </div>
 </div>
 
-<!-- SCRIPT: Pastikan vendor jquery sudah ada dari template Anda.
-     Kalau template Anda tidak include jquery, tambahkan jquery sebelum morris. -->
-<script src="<?= ASSET ?>/plugins/chart-morris/js/raphael.min.js"></script>
-<script src="<?= ASSET ?>/plugins/chart-morris/js/morris.min.js"></script>
+<!-- gunakan Chart.js, lebih modern dan interaktif -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
     const API_URL = "<?= BASE_URL ?>/api/analytics.php";
+    let userChartInst = null;
+    let salesChartInst = null;
 
     function rupiah(n) {
         return 'Rp ' + Number(n || 0).toLocaleString('id-ID');
@@ -192,7 +212,8 @@ include __DIR__ . '/../includes/topbar.php';
         })
         .then(res => {
             if (!res || res.success !== true) {
-                showAlert('warning', 'Gagal memuat data analitik (akses/response tidak valid).');
+                const serverMsg = res && res.message ? res.message : 'Gagal memuat data analitik (akses/response tidak valid).';
+                showAlert('warning', serverMsg);
                 setEmptyChart('userChart', 'Tidak ada data');
                 setEmptyChart('salesChart', 'Tidak ada data');
                 safeTableEmpty('Tidak ada data');
@@ -227,40 +248,126 @@ include __DIR__ . '/../includes/topbar.php';
         </div>
       `;
 
-            // Charts
+            // Data arrays
             const userData = Array.isArray(res.user) ? res.user : [];
             const salesData = Array.isArray(res.sales) ? res.sales : [];
 
+            // USER chart (line)
             if (!userData.length) {
                 setEmptyChart('userChart', 'Data user belum tersedia');
             } else {
-                // Pastikan container kosong (hapus placeholder)
-                document.getElementById('userChart').className = '';
-                document.getElementById('userChart').innerHTML = '';
-                new Morris.Line({
-                    element: 'userChart',
-                    data: userData,
-                    xkey: 'tanggal',
-                    ykeys: ['total'],
-                    labels: ['User'],
-                    parseTime: false,
-                    resize: true
+                const container = document.getElementById('userChart');
+                container.className = 'chart-box';
+                container.innerHTML = '<canvas id="userCanvas"></canvas>';
+                const ctx = document.getElementById('userCanvas').getContext('2d');
+
+                const labels = userData.map(d => d.tanggal);
+                const values = userData.map(d => Number(d.total || 0));
+
+                if (userChartInst) userChartInst.destroy();
+                userChartInst = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'User Baru',
+                            data: values,
+                            borderColor: 'rgb(102,126,234)',
+                            backgroundColor: 'rgba(102,126,234,0.12)',
+                            tension: 0.3,
+                            pointRadius: 3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: '#666'
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: '#666',
+                                    beginAtZero: true
+                                },
+                                grid: {
+                                    color: 'rgba(0,0,0,0.03)'
+                                }
+                            }
+                        }
+                    }
                 });
             }
 
+            // SALES chart (bar)
             if (!salesData.length) {
                 setEmptyChart('salesChart', 'Data penjualan belum tersedia');
             } else {
-                document.getElementById('salesChart').className = '';
-                document.getElementById('salesChart').innerHTML = '';
-                new Morris.Bar({
-                    element: 'salesChart',
-                    data: salesData,
-                    xkey: 'tanggal',
-                    ykeys: ['total'],
-                    labels: ['Omzet'],
-                    parseTime: false,
-                    resize: true
+                const container = document.getElementById('salesChart');
+                container.className = 'chart-box';
+                container.innerHTML = '<canvas id="salesCanvas"></canvas>';
+                const ctx2 = document.getElementById('salesCanvas').getContext('2d');
+
+                const labels = salesData.map(d => d.tanggal);
+                const values = salesData.map(d => Number(d.total || 0));
+
+                if (salesChartInst) salesChartInst.destroy();
+                salesChartInst = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Omzet (Rp)',
+                            data: values,
+                            backgroundColor: 'rgba(240,147,251,0.9)',
+                            borderRadius: 8,
+                            barThickness: 'flex'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'Omzet: ' + rupiah(context.parsed.y);
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    color: '#666'
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(0,0,0,0.03)'
+                                },
+                                ticks: {
+                                    color: '#666',
+                                    callback: v => 'Rp ' + Number(v).toLocaleString('id-ID')
+                                }
+                            }
+                        }
+                    }
                 });
             }
 

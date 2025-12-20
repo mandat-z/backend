@@ -5,6 +5,12 @@ if(session_status() !== PHP_SESSION_ACTIVE) session_start();
 require_once __DIR__ . '/../config/config.php';
 $db = get_db();
 
+$userId = $_SESSION['user']['id'] ?? null;
+if(!$userId){
+    echo json_encode(['success'=>false,'message'=>'Harus login']);
+    exit;
+}
+
 function jsonRes($arr,$code=200){
     http_response_code($code);
     echo json_encode($arr);

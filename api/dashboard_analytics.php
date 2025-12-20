@@ -14,7 +14,7 @@ try {
         'total_pesanan'    => (int) $db->query("SELECT COUNT(*) FROM orders")->fetchColumn(),
         'total_pelanggan'  => (int) $db->query("SELECT COUNT(*) FROM users WHERE role='pelanggan'")->fetchColumn(),
         'pesanan_pending' => (int) $db->query("SELECT COUNT(*) FROM orders WHERE status='pending'")->fetchColumn(),
-        'stok_rendah'      => (int) $db->query("SELECT COUNT(*) FROM produk WHERE stok <= 5")->fetchColumn(),
+        'stok_rendah'      => (int) $db->query("SELECT COUNT(*) FROM produk WHERE stok <= 2")->fetchColumn(),
         'pendapatan'       => (float) $db->query("
             SELECT COALESCE(SUM(total_harga),0)
             FROM orders
@@ -22,13 +22,14 @@ try {
         ")->fetchColumn()
     ];
 
-    // ================= ORDER TREND (30 HARI) =================
-    $orderTrend = $db->query("
+    // ================= DAILY SALES (30 HARI) =================
+    $dailySales = $db->query("
         SELECT 
             DATE(tanggal_pesan) AS tanggal,
-            COUNT(*) AS total
+            COALESCE(SUM(total_harga), 0) AS total_penjualan
         FROM orders
         WHERE tanggal_pesan >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+        AND status IN ('selesai', 'pending', 'proses')
         GROUP BY DATE(tanggal_pesan)
         ORDER BY tanggal ASC
     ")->fetchAll(PDO::FETCH_ASSOC);
@@ -62,7 +63,7 @@ try {
     echo json_encode([
         'success' => true,
         'summary' => $summary,
-        'order_trend' => $orderTrend,
+        'daily_sales' => $dailySales,
         'top_produk' => $topProduk,
         'latest_orders' => $latestOrders
     ]);

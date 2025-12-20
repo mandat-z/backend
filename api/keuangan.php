@@ -1,75 +1,95 @@
 <?php
-include "../config/config.php";
-header("Content-Type: application/json");
+// backend/api/keuangan.php
+include __DIR__ . '/../config/config.php';
+header('Content-Type: application/json');
 
-$db = get_db();
+try {
+  $db = get_db();
 
-$mulai   = $_GET['mulai']   ?? null;
-$selesai = $_GET['selesai'] ?? null;
+  $mulai   = $_GET['mulai']   ?? null;
+  $selesai = $_GET['selesai'] ?? null;
 
-/* =======================
-   PENDAPATAN
-======================= */
-$sqlPendapatan = "
-  SELECT 
-    DATE(tanggal_pesan) AS tanggal,
-    'Pendapatan' AS kategori,
-    CONCAT('Order #', id, ' (', status, ')') AS keterangan,
-    total_harga AS jumlah
-  FROM orders
-  WHERE status IN ('selesai','dikirim','dikemas')
-";
+  // =====================
+  // PENDAPATAN (Orders selesai)
+  // =====================
+  $sqlPendapatan = "
+        SELECT 
+            DATE(tanggal_pesan) AS tanggal,
+            'Pendapatan' AS kategori,
+            CONCAT('Order #', id) AS keterangan,
+            CAST(total_harga AS DECIMAL(15,2)) AS jumlah
+        FROM orders
+        WHERE status = 'selesai'
+    ";
 
-$params = [];
+  $paramsPendapatan = [];
+  if ($mulai) {
+    $sqlPendapatan .= " AND DATE(tanggal_pesan) >= :mulai";
+    $paramsPendapatan[':mulai'] = $mulai;
+  }
+  if ($selesai) {
+    $sqlPendapatan .= " AND DATE(tanggal_pesan) <= :selesai";
+    $paramsPendapatan[':selesai'] = $selesai;
+  }
+  $sqlPendapatan .= " ORDER BY tanggal DESC";
 
-if ($mulai) {
-    $sqlPendapatan .= " AND DATE(tanggal_pesan) >= ?";
-    $params[] = $mulai;
+  $stmt = $db->prepare($sqlPendapatan);
+  $stmt->execute($paramsPendapatan);
+  $pendapatan = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+  // =====================
+  // PENGELUARAN (Tabel pengeluaran)
+  // =====================
+  $sqlPengeluaran = "
+        SELECT 
+            tanggal,
+            kategori,
+            deskripsi AS keterangan,
+            nominal AS jumlah
+        FROM pengeluaran
+        WHERE 1=1
+    ";
+
+  $paramsPengeluaran = [];
+  if ($mulai) {
+    $sqlPengeluaran .= " AND tanggal >= :mulai";
+    $paramsPengeluaran[':mulai'] = $mulai;
+  }
+  if ($selesai) {
+    $sqlPengeluaran .= " AND tanggal <= :selesai";
+    $paramsPengeluaran[':selesai'] = $selesai;
+  }
+  $sqlPengeluaran .= " ORDER BY tanggal DESC";
+
+  $stmt = $db->prepare($sqlPengeluaran);
+  $stmt->execute($paramsPengeluaran);
+  $pengeluaran = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+  // =====================
+  // TOTAL
+  // =====================
+  $totalPendapatan = 0;
+  foreach ($pendapatan as $row) {
+    $totalPendapatan += floatval($row['jumlah']);
+  }
+
+  $totalPengeluaran = 0;
+  foreach ($pengeluaran as $row) {
+    $totalPengeluaran += floatval($row['jumlah']);
+  }
+
+  echo json_encode([
+    'success' => true,
+    'pendapatan' => $pendapatan,
+    'pengeluaran' => $pengeluaran,
+    'total_pendapatan' => floatval($totalPendapatan),
+    'total_pengeluaran' => floatval($totalPengeluaran),
+    'keuntungan_bersih' => floatval($totalPendapatan - $totalPengeluaran)
+  ]);
+} catch (Exception $e) {
+  http_response_code(400);
+  echo json_encode([
+    'success' => false,
+    'message' => $e->getMessage()
+  ]);
 }
-if ($selesai) {
-    $sqlPendapatan .= " AND DATE(tanggal_pesan) <= ?";
-    $params[] = $selesai;
-}
-
-$stmt = $db->prepare($sqlPendapatan);
-$stmt->execute($params);
-$pendapatan = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-/* =======================
-   PENGELUARAN
-======================= */
-$sqlPengeluaran = "
-  SELECT 
-    tanggal, kategori, keterangan, jumlah
-  FROM pengeluaran
-  WHERE 1=1
-";
-
-$params = [];
-
-if ($mulai) {
-    $sqlPengeluaran .= " AND tanggal >= ?";
-    $params[] = $mulai;
-}
-if ($selesai) {
-    $sqlPengeluaran .= " AND tanggal <= ?";
-    $params[] = $selesai;
-}
-
-$stmt = $db->prepare($sqlPengeluaran);
-$stmt->execute($params);
-$pengeluaran = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-/* =======================
-   TOTAL
-======================= */
-$totalPendapatan  = array_sum(array_column($pendapatan, 'jumlah'));
-$totalPengeluaran = array_sum(array_column($pengeluaran, 'jumlah'));
-
-echo json_encode([
-    'pendapatan'        => $pendapatan,
-    'pengeluaran'       => $pengeluaran,
-    'total_pendapatan'  => $totalPendapatan,
-    'total_pengeluaran' => $totalPengeluaran,
-    'keuntungan_bersih' => $totalPendapatan - $totalPengeluaran
-]);

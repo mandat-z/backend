@@ -5,6 +5,7 @@ header('Content-Type: application/json');
 $data = json_decode(file_get_contents("php://input"), true);
 
 $orderId = intval($data['order_id'] ?? 0);
+$kurir   = trim($data['kurir'] ?? '');
 $resi    = trim($data['no_resi'] ?? '');
 $status  = $data['status_pengiriman'] ?? '';
 
@@ -19,16 +20,18 @@ if (!$orderId || !$status) {
 
 $db = get_db();
 
-/* UPSERT SHIPPING */
-$stmt = $db->prepare("
-    INSERT INTO order_shipping (order_id, no_resi, status_pengiriman, updated_at)
-    VALUES (?, ?, ?, NOW())
-    ON DUPLICATE KEY UPDATE
-        no_resi = VALUES(no_resi),
-        status_pengiriman = VALUES(status_pengiriman),
-        updated_at = NOW()
-");
-$stmt->execute([$orderId, $resi ?: null, $status]);
+/* Periksa apakah record shipping untuk order sudah ada */
+$cek = $db->prepare("SELECT id FROM order_shipping WHERE order_id = ? LIMIT 1");
+$cek->execute([$orderId]);
+$exists = $cek->fetchColumn();
+
+if ($exists) {
+    $upd = $db->prepare("UPDATE order_shipping SET kurir = ?, no_resi = ?, status_pengiriman = ?, updated_at = NOW() WHERE order_id = ?");
+    $upd->execute([$kurir ?: null, $resi ?: null, $status, $orderId]);
+} else {
+    $ins = $db->prepare("INSERT INTO order_shipping (order_id, kurir, no_resi, status_pengiriman, updated_at) VALUES (?, ?, ?, ?, NOW())");
+    $ins->execute([$orderId, $kurir ?: null, $resi ?: null, $status]);
+}
 
 /* SINKRON STATUS ORDER */
 if (in_array($status, ['Terkirim', 'Dikirim'])) {

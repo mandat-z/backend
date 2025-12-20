@@ -39,6 +39,10 @@
                 </li>
 
                 <li class="nav-item">
+                    <a href="<?= BASE_URL ?>/pages/pengeluaran.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-inbox"></i></span><span class="pcoded-mtext">Pengeluaran</span></a>
+                </li>
+
+                <li class="nav-item">
                     <a href="<?= BASE_URL ?>/pages/laporan.php" class="nav-link"><span class="pcoded-micon"><i class="fas fa-file-alt"></i></span><span class="pcoded-mtext">Laporan Keuangan</span></a>
                 </li>
 

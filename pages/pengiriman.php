@@ -275,6 +275,7 @@ include __DIR__ . '/../includes/topbar.php';
       try {
         const payload = {
           order_id: shipId.value,
+          kurir: shipKurir.value,
           no_resi: shipResi.value,
           status_pengiriman: shipStatus.value
         };
